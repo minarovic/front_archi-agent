@@ -1,0 +1,59 @@
+{
+  "timestamp": "2025-10-30T02:32:43.032049",
+  "total_files": 3,
+  "valid_files": 3,
+  "invalid_files": 0,
+  "validation_results": [
+    {
+      "file": "scrum/backlog/mcop-mvp-v1-scope.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-MVP-V1",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-10-30",
+        "skill_implementation": null,
+        "skill_status": "manual_only",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/mcop-project-overview.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-PROJECT-OVERVIEW",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-10-30",
+        "skill_implementation": null,
+        "skill_status": "manual_only",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/tool0-business-parser.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-TOOL0-PARSER",
+        "type": "story",
+        "status": "planned",
+        "priority": "should-have",
+        "updated": "2025-10-30",
+        "skill_implementation": "src/tool0/parser.py",
+        "skill_status": "needs_design",
+        "skill_time_saved": "1-2h per request",
+        "skill_created": false
+      }
+    }
+  ]
+}
