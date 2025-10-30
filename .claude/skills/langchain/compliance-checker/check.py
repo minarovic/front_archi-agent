@@ -50,6 +50,14 @@ class LangChainComplianceChecker:
         self.docs_dir = docs_dir
         self.issues = []
 
+    @staticmethod
+    def _safe_relative_path(file_path: Path) -> str:
+        """Get relative path if possible, otherwise absolute."""
+        try:
+            return str(file_path.relative_to(Path.cwd()))
+        except ValueError:
+            return str(file_path)
+
     def check_file(self, file_path: Path) -> Dict[str, Any]:
         """Check single Python file for compliance."""
         issues = []
@@ -80,7 +88,7 @@ class LangChainComplianceChecker:
             })
         except Exception as e:
             issues.append({
-                "file": str(file_path.relative_to(Path.cwd())),
+                "file": self._safe_relative_path(file_path),
                 "line": 0,
                 "severity": "error",
                 "issue": f"Failed to parse file: {str(e)}",
@@ -88,7 +96,7 @@ class LangChainComplianceChecker:
             })
 
         return {
-            "file": str(file_path.relative_to(Path.cwd())),
+            "file": self._safe_relative_path(file_path),
             "compliant": len([i for i in issues if i["severity"] == "error"]) == 0,
             "issues": issues
         }
@@ -115,7 +123,7 @@ class LangChainComplianceChecker:
 
                         if not is_valid and not module.startswith("langchain.chat_models"):
                             issues.append({
-                                "file": str(file_path.relative_to(Path.cwd())),
+                                "file": self._safe_relative_path(file_path),
                                 "line": node.lineno,
                                 "severity": "warning",
                                 "issue": f"Unverified import: from {module} import {alias.name}",
@@ -138,7 +146,7 @@ class LangChainComplianceChecker:
                 line_num = content[:match.start()].count('\n') + 1
 
                 issues.append({
-                    "file": str(file_path.relative_to(Path.cwd())),
+                    "file": self._safe_relative_path(file_path),
                     "line": line_num,
                     "severity": pattern_def["severity"],
                     "issue": pattern_def["message"],
@@ -165,7 +173,7 @@ class LangChainComplianceChecker:
                     # Check if class has docstring
                     if not ast.get_docstring(node):
                         issues.append({
-                            "file": str(file_path.relative_to(Path.cwd())),
+                            "file": self._safe_relative_path(file_path),
                             "line": node.lineno,
                             "severity": "warning",
                             "issue": f"Pydantic model '{node.name}' missing docstring",
@@ -186,7 +194,7 @@ class LangChainComplianceChecker:
                                     # Check for description parameter
                                     if "description=" not in field_code:
                                         issues.append({
-                                            "file": str(file_path.relative_to(Path.cwd())),
+                                            "file": self._safe_relative_path(file_path),
                                             "line": item.lineno,
                                             "severity": "warning",
                                             "issue": f"Field '{field_name}' in model '{node.name}' missing description",
@@ -221,7 +229,7 @@ class LangChainComplianceChecker:
 
                             if "ToolStrategy" not in func_name and "ProviderStrategy" not in func_name:
                                 issues.append({
-                                    "file": str(file_path.relative_to(Path.cwd())),
+                                    "file": self._safe_relative_path(file_path),
                                     "line": node.lineno,
                                     "severity": "error",
                                     "issue": "response_format should use ToolStrategy() or ProviderStrategy()",

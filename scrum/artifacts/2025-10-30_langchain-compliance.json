@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-10-30T11:10:54.988322",
+  "phase": "mvp",
+  "total_files": 1,
+  "compliant_files": 1,
+  "non_compliant_files": 0,
+  "total_issues": 0,
+  "errors": 0,
+  "warnings": 0,
+  "results": [
+    {
+      "file": "src/tool0/parser.py",
+      "compliant": true,
+      "issues": []
+    }
+  ]
+}

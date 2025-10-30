@@ -1,12 +1,11 @@
 """
 Business Request Parser (Tool 0) - MVP Implementation
 
-Parses standardized Markdown business documents into structured JSON using LLM.
-Uses LangChain create_agent with ToolStrategy for structured output.
+Parses standardized Markdown business documents into structured JSON using LangGraph.
+Uses create_agent with response_format for structured output.
 """
 from typing import Tuple, Dict, Any
 from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
 from .schemas import BusinessRequest
 
 
@@ -67,13 +66,17 @@ def parse_business_request(
         'Analytics Platform'
     """
     try:
-        # Create agent with ToolStrategy for structured output
+        # Create agent with structured output
+        # When passing schema directly, LangGraph auto-selects:
+        # - ProviderStrategy for models with native support (OpenAI, Grok)
+        # - ToolStrategy for other models
         agent = create_agent(
             model=model,
-            response_format=ToolStrategy(BusinessRequest)
+            response_format=BusinessRequest,  # Auto-selects best strategy
+            system_prompt=SYSTEM_PROMPT
         )
 
-        # Prepare messages
+        # Prepare user message
         user_message = f"""Parse the following business request document:
 
 {document}
@@ -83,7 +86,6 @@ Extract all information into the structured format."""
         # Invoke agent
         result = agent.invoke({
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
             ]
         })
