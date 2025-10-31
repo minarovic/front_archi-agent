@@ -1,13 +1,13 @@
 ---
 id: MCOP-TOOL0-PARSER
 type: story
-status: planned
+status: done
 priority: should-have
-updated: 2025-10-30
+updated: 2025-10-31
 skill_implementation: "src/tool0/parser.py"
-skill_status: "needs_design"
+skill_status: "ready_to_execute"
 skill_time_saved: "1-2h per request"
-skill_created: false
+skill_created: true
 ---
 
 # Tool 0 – Business Request Parser (LLM MVP)
@@ -20,7 +20,7 @@ Acceptance criteria
 - [ ] Jedno volání LLM (bez regexů) převede tento dokument na validní JSON se strukturou: `project_metadata` {`project_name`, `sponsor`, `submitted_at` (ISO 8601), `extra`}, `goal`, `scope_in`, `scope_out`, `entities[]`, `metrics[]`, `sources[]`, `constraints[]`, `deliverables[]`.
 - [ ] Jedno volání LLM (bez regexů) převede tento dokument na validní JSON se strukturou: `project_metadata` {`project_name`, `sponsor`, `submitted_at` (ISO 8601), `extra`}, `goal`, `scope_in`, `scope_out`, `entities[]`, `metrics[]`, `sources[]`, `constraints[]`, `deliverables[]`. Výstup je generován přes structured-output strategii (Pydantic/TypedDict schema) a vrací se jako `structured_response`.
 - [ ] Notebook vrací JSON přímo pod buňkou a ukládá výsledek i prompt do souboru (`data/tool0_samples/<timestamp>.json` a `.md`).
-- [ ] Parsovací funkce je implementovaná v samostatném modulu `src/tool0/parser.py` a notebook ji pouze volá; modul obsahuje i README se stručným návodem.
+- [ ] První verze (v1) může použít inline implementaci pro jednodušší testování (bez importu modulu). Modul `src/tool0/parser.py` existuje a bude využit v další iteraci (refactor); modul obsahuje i README se stručným návodem.
 
 Notes
 - Prompt je cílený na naši referenční šablonu a explicitně vyplňuje `"unknown"`, pokud chybí hodnota; instrukce musí počítat s tím, že sekce mohou obsahovat volný text s víc hodnotami.

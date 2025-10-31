@@ -1,0 +1,160 @@
+{
+  "totals": {
+    "total_assets_raw": 2182,
+    "total_assets_dedup": 2092,
+    "schemas": 2
+  },
+  "counts": {
+    "by_type": {
+      "Schema": 2,
+      "Database View": 90,
+      "Column": 2000
+    },
+    "by_status": {
+      "Implemented": 1045,
+      "Missing from source": 1047
+    },
+    "by_domain": {
+      "DAP Business Partner Gold": 2092
+    },
+    "by_securityClassification": {
+      "Confidential": 2,
+      "unknown": 2090
+    }
+  },
+  "validation": {
+    "has_validation_field": 2092,
+    "true": 125,
+    "false": 1967,
+    "rate_true": 0.05975143403441682
+  },
+  "articulation": {
+    "count": 2092,
+    "mean": 5.975143403441683,
+    "median": 0.0,
+    "min": 0.0,
+    "max": 100.0,
+    "nonzero_share": 0.05975143403441682
+  },
+  "data_quality": {
+    "monitoring_frequency": {
+      "Ad hoc": 2
+    },
+    "has_monitoring": {
+      "false": 2
+    },
+    "check_type": {
+      "N/A": 2
+    }
+  },
+  "missing": {
+    "description_both_missing_count": 12,
+    "ownerInSource_missing_count": 2000
+  },
+  "status_missing_from_source_count": 1047,
+  "schemas_breakdown": {
+    "dm_ba_purchase": {
+      "total_children": 72,
+      "views": 72,
+      "dimensions": 52,
+      "facts": 11,
+      "relations": 9,
+      "validated_true": 1,
+      "articulation_gt0": 1
+    },
+    "dm_bs_purchase": {
+      "total_children": 18,
+      "views": 18,
+      "dimensions": 11,
+      "facts": 7,
+      "relations": 0,
+      "validated_true": 0,
+      "articulation_gt0": 0
+    }
+  },
+  "field_anomalies": {
+    "has_misspelled_hierarchy_field": true
+  },
+  "top_articulated_assets": [
+    {
+      "displayName": "dm_ba_purchase",
+      "id": "0192480d-a0dc-736e-b034-c740659fcbcd",
+      "typeName": "Schema",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dm_bs_purchase",
+      "id": "0192480d-b047-7428-9137-5045fbca17da",
+      "typeName": "Schema",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dimv_material",
+      "id": "0192480d-a107-7358-899c-e945db393618",
+      "typeName": "Database View",
+      "schema": "dm_ba_purchase",
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_code",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5725",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_name_cz",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5692",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_name_en",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5722",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_reporting_currency_group",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5757",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_reporting_sort_order",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea564d",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dim_accounting_currency_key",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea56a2",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "cost_center_code",
+      "id": "0192480d-a107-7358-899c-e945db393558",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    }
+  ]
+}

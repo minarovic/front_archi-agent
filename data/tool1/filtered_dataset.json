@@ -1,0 +1,47 @@
+{
+  "timestamp": "2025-10-31T03:08:25.758821",
+  "business_context": {
+    "entities": [
+      "Suppliers (dodavatelé)",
+      "Purchase Orders (nákupní objednávky)",
+      "Products (produkty)",
+      "Delivery Performance (výkonnost dodávek)"
+    ],
+    "scope_out": "HR data o zaměstnancích; Finanční forecasting a budgetování; Real-time monitoring dodávek; Integrace s externí CRM systémy"
+  },
+  "mappings": [
+    {
+      "entity": "Suppliers (dodavatelé)",
+      "candidate_id": "dm_bs_purchase",
+      "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+      "confidence": 0.92,
+      "rationale": "Strong fuzzy match: 'Suppliers' (Czech: 'dodavatelé') is a core master dimension used by purchasing data marts. The candidate is a Purchasing Reporting Data Mart ('BS (Production Purchasing) Reporting Data Mart'), so it likely contains vendor/supplier master and supplier-related transaction attributes. No conflict with excluded topics."
+    },
+    {
+      "entity": "Purchase Orders (nákupní objednávky)",
+      "candidate_id": "dm_bs_purchase",
+      "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+      "confidence": 0.98,
+      "rationale": "Very high confidence: the candidate is explicitly a 'Purchasing' reporting data mart, so purchase orders (nákupní objednávky) are a primary object in this domain. The name and description match directly. Excluded topics do not apply."
+    },
+    {
+      "entity": "Products (produkty)",
+      "candidate_id": "dm_bs_purchase",
+      "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+      "confidence": 0.8,
+      "rationale": "Moderate confidence: purchasing marts commonly include product/item identifiers (SKUs) for PO line items and matching. The Czech term 'produkty' aligns with 'products' and likely maps to item/product attributes in this DM, though full product master details might live in a separate product data mart."
+    },
+    {
+      "entity": "Delivery Performance (výkonnost dodávek)",
+      "candidate_id": "dm_bs_purchase",
+      "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+      "confidence": 0.65,
+      "rationale": "Lower confidence: delivery performance (výkonnost dodávek) can be derived from purchasing data (POs, receipts, delivery dates) and may be partially present in a Purchasing DM. However, delivery performance metrics are also often maintained in logistics/transportation or dedicated supply chain marts, so mapping is plausible but not certain. Also ensure this isn't interpreted as real-time monitoring (which is excluded) — this mapping is for reporting/historical metrics only."
+    }
+  ],
+  "stats": {
+    "total_entities": 4,
+    "mapped_entities": 4,
+    "avg_confidence": 0.8375
+  }
+}

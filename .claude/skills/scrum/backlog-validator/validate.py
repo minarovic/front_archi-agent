@@ -27,28 +27,33 @@ VALID_TYPES = ["story", "epic", "task"]
 VALID_PRIORITIES = ["must-have", "should-have", "could-have", "wont-have"]
 
 REQUIRED_FIELDS = ["id", "type", "status", "priority", "updated"]
-SKILL_FIELDS = ["skill_implementation", "skill_status", "skill_time_saved", "skill_created"]
+SKILL_FIELDS = [
+    "skill_implementation",
+    "skill_status",
+    "skill_time_saved",
+    "skill_created",
+]
 
 
 def extract_frontmatter(file_path: Path) -> Dict[str, Any] | None:
     """Extract YAML frontmatter from markdown file."""
-    content = file_path.read_text(encoding='utf-8')
+    content = file_path.read_text(encoding="utf-8")
 
-    if not content.startswith('---'):
+    if not content.startswith("---"):
         return None
 
     # Find second ---
-    lines = content.split('\n')
+    lines = content.split("\n")
     end_idx = None
     for i, line in enumerate(lines[1:], 1):
-        if line.strip() == '---':
+        if line.strip() == "---":
             end_idx = i
             break
 
     if end_idx is None:
         return None
 
-    yaml_content = '\n'.join(lines[1:end_idx])
+    yaml_content = "\n".join(lines[1:end_idx])
     try:
         return yaml.safe_load(yaml_content)
     except yaml.YAMLError:
@@ -74,8 +79,8 @@ def validate_file(file_path: Path) -> Dict[str, Any]:
             "file": rel_path,
             "valid": False,
             "errors": ["Missing or invalid YAML frontmatter"],
-            "warnings": []
-        }    # Check required fields
+            "warnings": [],
+        }  # Check required fields
     for field in REQUIRED_FIELDS:
         if field not in frontmatter:
             errors.append(f"Missing required field: {field}")
@@ -87,41 +92,63 @@ def validate_file(file_path: Path) -> Dict[str, Any]:
 
     # Validate enum values
     if "status" in frontmatter and frontmatter["status"] not in VALID_STATUS:
-        errors.append(f"Invalid status: {frontmatter['status']} (must be one of {VALID_STATUS})")
+        errors.append(
+            f"Invalid status: {frontmatter['status']} (must be one of {VALID_STATUS})"
+        )
 
     if "type" in frontmatter and frontmatter["type"] not in VALID_TYPES:
-        errors.append(f"Invalid type: {frontmatter['type']} (must be one of {VALID_TYPES})")
+        errors.append(
+            f"Invalid type: {frontmatter['type']} (must be one of {VALID_TYPES})"
+        )
 
     if "priority" in frontmatter and frontmatter["priority"] not in VALID_PRIORITIES:
-        errors.append(f"Invalid priority: {frontmatter['priority']} (must be one of {VALID_PRIORITIES})")
+        errors.append(
+            f"Invalid priority: {frontmatter['priority']} (must be one of {VALID_PRIORITIES})"
+        )
 
-    if "skill_status" in frontmatter and frontmatter["skill_status"] not in VALID_SKILL_STATUS:
-        errors.append(f"Invalid skill_status: {frontmatter['skill_status']} (must be one of {VALID_SKILL_STATUS})")
+    if (
+        "skill_status" in frontmatter
+        and frontmatter["skill_status"] not in VALID_SKILL_STATUS
+    ):
+        errors.append(
+            f"Invalid skill_status: {frontmatter['skill_status']} (must be one of {VALID_SKILL_STATUS})"
+        )
 
     # Validate skill_created is boolean
-    if "skill_created" in frontmatter and not isinstance(frontmatter["skill_created"], bool):
-        errors.append(f"skill_created must be boolean, got: {type(frontmatter['skill_created']).__name__}")
+    if "skill_created" in frontmatter and not isinstance(
+        frontmatter["skill_created"], bool
+    ):
+        errors.append(
+            f"skill_created must be boolean, got: {type(frontmatter['skill_created']).__name__}"
+        )
 
     return {
         "file": rel_path,
         "valid": len(errors) == 0,
         "errors": errors,
         "warnings": warnings,
-        "frontmatter": frontmatter
+        "frontmatter": frontmatter,
     }
+
+
 def main():
     """Main validation logic."""
-    backlog_dir = Path("scrum/backlog")
+    # Support validating multiple locations: backlog (always) and done (completed stories)
+    scan_dirs = [Path("scrum/backlog"), Path("scrum/done")]
 
-    if not backlog_dir.exists():
-        print(f"Error: {backlog_dir} does not exist")
+    found_any_dir = False
+    md_files = []
+    for d in scan_dirs:
+        if d.exists():
+            found_any_dir = True
+            md_files.extend([f for f in d.glob("*.md") if not f.name.startswith("_")])
+
+    if not found_any_dir:
+        print("Error: Neither scrum/backlog nor scrum/done exists")
         return 1
 
-    # Find all markdown files (skip templates)
-    md_files = [f for f in backlog_dir.glob("*.md") if not f.name.startswith("_")]
-
     if not md_files:
-        print(f"Warning: No markdown files found in {backlog_dir}")
+        print("Warning: No markdown files found in scrum/backlog or scrum/done")
         return 0
 
     # Validate each file
@@ -140,15 +167,19 @@ def main():
         "total_files": total_files,
         "valid_files": valid_files,
         "invalid_files": invalid_files,
-        "validation_results": convert_dates_to_str(results)
-    }    # Save to artifacts
+        "validation_results": convert_dates_to_str(results),
+    }  # Save to artifacts
     artifacts_dir = Path("scrum/artifacts")
     artifacts_dir.mkdir(exist_ok=True)
 
-    output_file = artifacts_dir / f"{datetime.now().date().isoformat()}_backlog-validation.json"
-    output_file.write_text(json.dumps(summary, indent=2, ensure_ascii=False))    # Print summary
+    output_file = (
+        artifacts_dir / f"{datetime.now().date().isoformat()}_backlog-validation.json"
+    )
+    output_file.write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False)
+    )  # Print summary
     print(f"\n{'='*60}")
-    print(f"Backlog Validation Report")
+    print(f"Backlog Validation Report (backlog + done)")
     print(f"{'='*60}")
     print(f"Total files:   {total_files}")
     print(f"Valid files:   {valid_files}")
