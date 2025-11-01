@@ -2,7 +2,9 @@
     "entities": [
         "Suppliers (dodavatelé)",
         "Purchase Orders (nákupní objednávky)",
-        "Products (produkty)"
+        "Products (produkty)",
+        "Warehouse Inventory (skladové zásoby)",
+        "Customer Complaints (stížnosti zákazníků)"
     ],
     "scope_out": "HR data o zaměstnancích; Finanční forecasting; Real-time monitoring"
 }

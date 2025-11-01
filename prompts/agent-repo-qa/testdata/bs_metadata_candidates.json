@@ -8,5 +8,10 @@
         "displayName": "dm_bs_logistics",
         "fullName": "Systems>dap_gold_prod>dm_bs_logistics",
         "description": "BS Logistics Data Mart - warehouse operations, inventory levels, shipment tracking, distribution channels"
+    },
+    {
+        "displayName": "dm_bs_hr_historical",
+        "fullName": "Systems>dap_gold_prod>dm_bs_hr_historical",
+        "description": "BS HR Historical Data Mart - employee records, payroll history, organizational structure, HR forecasting models"
     }
 ]
