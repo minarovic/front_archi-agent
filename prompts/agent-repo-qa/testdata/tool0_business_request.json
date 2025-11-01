@@ -1,0 +1,8 @@
+{
+    "entities": [
+        "Suppliers (dodavatelé)",
+        "Purchase Orders (nákupní objednávky)",
+        "Products (produkty)"
+    ],
+    "scope_out": "HR data o zaměstnancích; Finanční forecasting; Real-time monitoring"
+}

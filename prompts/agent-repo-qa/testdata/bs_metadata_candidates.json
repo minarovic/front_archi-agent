@@ -1,0 +1,12 @@
+[
+    {
+        "displayName": "dm_bs_purchase",
+        "fullName": "Systems>dap_gold_prod>dm_bs_purchase",
+        "description": "BS Production Purchasing Reporting Data Mart - contains supplier master, purchase order transactions, product SKUs, delivery performance metrics"
+    },
+    {
+        "displayName": "dm_bs_logistics",
+        "fullName": "Systems>dap_gold_prod>dm_bs_logistics",
+        "description": "BS Logistics Data Mart - warehouse operations, inventory levels, shipment tracking, distribution channels"
+    }
+]
