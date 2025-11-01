@@ -1,0 +1,47 @@
+{
+    "timestamp": "2025-11-01T00:23:16.039969",
+    "business_context": {
+        "entities": [
+            "Suppliers (dodavatelé)",
+            "Purchase Orders (nákupní objednávky)",
+            "Products (produkty)",
+            "Delivery Performance (výkonnost dodávek)"
+        ],
+        "scope_out": "HR data o zaměstnancích; Finanční forecasting a budgetování; Real-time monitoring dodávek; Integrace s externí CRM systémy"
+    },
+    "mappings": [
+        {
+            "entity": "Suppliers (dodavatelé)",
+            "candidate_id": "dm_bs_purchase",
+            "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+            "confidence": 0.95,
+            "rationale": "dm_bs_purchase is a Production Purchasing Reporting Data Mart; suppliers (dodavatelé) are core to purchasing data (supplier master, supplier transactions). Czech/English synonym match is direct. High relevance_score (0.9) supports strong match. Not related to excluded topics."
+        },
+        {
+            "entity": "Purchase Orders (nákupní objednávky)",
+            "candidate_id": "dm_bs_purchase",
+            "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+            "confidence": 0.98,
+            "rationale": "Purchase orders are the primary object of a purchasing data mart. Exact semantic match (nákupní objednávky) and the candidate's description (BS Production Purchasing) make this the best-fit. Not related to excluded topics."
+        },
+        {
+            "entity": "Products (produkty)",
+            "candidate_id": "dm_bs_purchase",
+            "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+            "confidence": 0.85,
+            "rationale": "Products are commonly included in purchasing/reporting data (items bought, SKU-level purchase history). Candidate likely contains product identifiers and purchase-related product attributes. Slightly lower confidence because a dedicated product/master-data mart might also exist but is not offered in the candidate list."
+        },
+        {
+            "entity": "Delivery Performance (výkonnost dodávek)",
+            "candidate_id": "dm_bs_purchase",
+            "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
+            "confidence": 0.62,
+            "rationale": "Delivery performance metrics (on-time delivery, lead times, fill rates) are often reported from purchasing data marts. However, the user-specified exclusion 'real-time monitoring dodávek' cautions against real-time delivery monitoring mappings; dm_bs_purchase appears to be a reporting/data-mart (not real-time) so it can support aggregated delivery performance reporting but may not meet real-time monitoring needs. Confidence is moderate for aggregated reporting, lower if the intent is real-time."
+        }
+    ],
+    "stats": {
+        "total_entities": 4,
+        "mapped_entities": 4,
+        "avg_confidence": 0.85
+    }
+}

@@ -1,0 +1,127 @@
+{
+  "timestamp": "2025-11-01T22:59:04.747318",
+  "total_files": 7,
+  "valid_files": 7,
+  "invalid_files": 0,
+  "validation_results": [
+    {
+      "file": "scrum/backlog/agent-repo-qa-min.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-AGENT-REPO-QA-MIN",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-11-01",
+        "skill_implementation": null,
+        "skill_status": "needs_design",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/agent-repo-qa.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-AGENT-REPO-QA",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-11-01",
+        "skill_implementation": null,
+        "skill_status": "needs_design",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/mcop-mvp-v1-scope.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-MVP-V1",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-10-30",
+        "skill_implementation": null,
+        "skill_status": "manual_only",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/mcop-project-overview.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-PROJECT-OVERVIEW",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-10-30",
+        "skill_implementation": null,
+        "skill_status": "manual_only",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/backlog/tool2-structure-analysis.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-TOOL2-STRUCTURE",
+        "type": "story",
+        "status": "planned",
+        "priority": "must-have",
+        "updated": "2025-11-01",
+        "skill_implementation": null,
+        "skill_status": "needs_design",
+        "skill_time_saved": null,
+        "skill_created": false
+      }
+    },
+    {
+      "file": "scrum/done/tool0-business-parser.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-TOOL0-PARSER",
+        "type": "story",
+        "status": "done",
+        "priority": "should-have",
+        "updated": "2025-10-31",
+        "skill_implementation": "src/tool0/parser.py",
+        "skill_status": "ready_to_execute",
+        "skill_time_saved": "1-2h per request",
+        "skill_created": true
+      }
+    },
+    {
+      "file": "scrum/done/tool1-data-ingest.md",
+      "valid": true,
+      "errors": [],
+      "warnings": [],
+      "frontmatter": {
+        "id": "MCOP-TOOL1-INGEST",
+        "type": "story",
+        "status": "done",
+        "priority": "must-have",
+        "updated": "2025-10-31",
+        "skill_implementation": "notebooks/tool1_ingest_demo.ipynb",
+        "skill_status": "ready_to_execute",
+        "skill_time_saved": "2-3 hours saved on LangGraph multi-node setup",
+        "skill_created": true
+      }
+    }
+  ]
+}

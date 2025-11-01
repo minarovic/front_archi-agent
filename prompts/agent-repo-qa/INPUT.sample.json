@@ -1,0 +1,5 @@
+{
+    "project_root": "/absolute/path/to/archi-agent",
+    "filtered_json_rel": "data/tool1/filtered_dataset.json",
+    "backlog_glob_rel": "scrum/backlog/*.md"
+}

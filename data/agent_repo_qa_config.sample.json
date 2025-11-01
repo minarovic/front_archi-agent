@@ -1,0 +1,26 @@
+{
+    "project_root": "/absolute/path/to/archi-agent",
+    "paths": {
+        "filtered_json_rel": "data/tool1/filtered_dataset.json",
+        "backlog_glob_rel": "scrum/backlog/*.md",
+        "info_dirs_rel": [
+            "docs_langgraph",
+            "notebooks"
+        ]
+    },
+    "frontmatter": {
+        "required": [
+            "id",
+            "type",
+            "status",
+            "priority",
+            {
+                "project_root": "/absolute/path/to/archi-agent",
+                "filtered_json_rel": "data/tool1/filtered_dataset.json",
+                "backlog_glob_rel": "scrum/backlog/*.md"
+            }
+        ]
+    },
+    "updated_pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+}
+}
