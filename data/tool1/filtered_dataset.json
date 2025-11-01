@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-10-31T03:08:25.758821",
+  "timestamp": "2025-11-01T00:23:16.039969",
   "business_context": {
     "entities": [
       "Suppliers (dodavatelé)",
@@ -14,34 +14,34 @@
       "entity": "Suppliers (dodavatelé)",
       "candidate_id": "dm_bs_purchase",
       "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
-      "confidence": 0.92,
-      "rationale": "Strong fuzzy match: 'Suppliers' (Czech: 'dodavatelé') is a core master dimension used by purchasing data marts. The candidate is a Purchasing Reporting Data Mart ('BS (Production Purchasing) Reporting Data Mart'), so it likely contains vendor/supplier master and supplier-related transaction attributes. No conflict with excluded topics."
+      "confidence": 0.95,
+      "rationale": "dm_bs_purchase is a Production Purchasing Reporting Data Mart; suppliers (dodavatelé) are core to purchasing data (supplier master, supplier transactions). Czech/English synonym match is direct. High relevance_score (0.9) supports strong match. Not related to excluded topics."
     },
     {
       "entity": "Purchase Orders (nákupní objednávky)",
       "candidate_id": "dm_bs_purchase",
       "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
       "confidence": 0.98,
-      "rationale": "Very high confidence: the candidate is explicitly a 'Purchasing' reporting data mart, so purchase orders (nákupní objednávky) are a primary object in this domain. The name and description match directly. Excluded topics do not apply."
+      "rationale": "Purchase orders are the primary object of a purchasing data mart. Exact semantic match (nákupní objednávky) and the candidate's description (BS Production Purchasing) make this the best-fit. Not related to excluded topics."
     },
     {
       "entity": "Products (produkty)",
       "candidate_id": "dm_bs_purchase",
       "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
-      "confidence": 0.8,
-      "rationale": "Moderate confidence: purchasing marts commonly include product/item identifiers (SKUs) for PO line items and matching. The Czech term 'produkty' aligns with 'products' and likely maps to item/product attributes in this DM, though full product master details might live in a separate product data mart."
+      "confidence": 0.85,
+      "rationale": "Products are commonly included in purchasing/reporting data (items bought, SKU-level purchase history). Candidate likely contains product identifiers and purchase-related product attributes. Slightly lower confidence because a dedicated product/master-data mart might also exist but is not offered in the candidate list."
     },
     {
       "entity": "Delivery Performance (výkonnost dodávek)",
       "candidate_id": "dm_bs_purchase",
       "candidate_name": "Systems>dap_gold_prod>dm_bs_purchase",
-      "confidence": 0.65,
-      "rationale": "Lower confidence: delivery performance (výkonnost dodávek) can be derived from purchasing data (POs, receipts, delivery dates) and may be partially present in a Purchasing DM. However, delivery performance metrics are also often maintained in logistics/transportation or dedicated supply chain marts, so mapping is plausible but not certain. Also ensure this isn't interpreted as real-time monitoring (which is excluded) — this mapping is for reporting/historical metrics only."
+      "confidence": 0.62,
+      "rationale": "Delivery performance metrics (on-time delivery, lead times, fill rates) are often reported from purchasing data marts. However, the user-specified exclusion 'real-time monitoring dodávek' cautions against real-time delivery monitoring mappings; dm_bs_purchase appears to be a reporting/data-mart (not real-time) so it can support aggregated delivery performance reporting but may not meet real-time monitoring needs. Confidence is moderate for aggregated reporting, lower if the intent is real-time."
     }
   ],
   "stats": {
     "total_entities": 4,
     "mapped_entities": 4,
-    "avg_confidence": 0.8375
+    "avg_confidence": 0.85
   }
 }

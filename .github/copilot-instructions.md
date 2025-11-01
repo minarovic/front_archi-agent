@@ -68,13 +68,13 @@ skill_created: true | false
 
    # ✅ CORRECT
    agent = create_agent(
-       model="openai:gpt-4o-mini",
+       model="openai:gpt-5-mini",
        response_format=ToolStrategy(MySchema)
    )
 
    # ❌ INCORRECT - deprecated
    agent = create_agent(
-       model="openai:gpt-4o-mini",
+       model="openai:gpt-5-mini",
        response_format=MySchema
    )
    ```

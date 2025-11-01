@@ -33,7 +33,7 @@ skill_created: true | false                     # Implementation flag
 
 **General DoD (all stories):**
 - [ ] Code reviewed and approved
-- [ ] Tests written and passing  
+- [ ] Tests written and passing
 - [ ] Documentation updated
 
 **Skill DoD (when `skill_created: true`):**
@@ -54,13 +54,13 @@ from langchain.agents.structured_output import ToolStrategy
 
 # ✅ CORRECT
 agent = create_agent(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     response_format=ToolStrategy(MySchema)
 )
 
 # ❌ WRONG - deprecated, will fail validation
 agent = create_agent(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     response_format=MySchema  # Don't pass schema directly
 )
 ```
@@ -103,7 +103,7 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 ### LangChain Compliance Checker
 - **Purpose:** Validates Python code against LangChain docs
-- **Run:** 
+- **Run:**
   ```bash
   python3 .claude/skills/langchain/compliance-checker/check.py --file src/tool0/parser.py
   python3 .claude/skills/langchain/compliance-checker/check.py --dir src/
@@ -158,8 +158,8 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 ## Tool 0 Implementation Guide
 
-**Status:** Planned (not yet implemented)  
-**Path:** `src/tool0/parser.py`  
+**Status:** Planned (not yet implemented)
+**Path:** `src/tool0/parser.py`
 **Story:** `scrum/backlog/tool0-business-parser.md`
 
 **Requirements:**
