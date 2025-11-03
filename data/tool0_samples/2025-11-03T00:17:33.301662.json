@@ -1,0 +1,47 @@
+{
+  "project_metadata": {
+    "project_name": "BA/BS Supplier Analytics Platform",
+    "sponsor": "Petra Nováková",
+    "submitted_at": "2025-10-25",
+    "extra": {
+      "department": "Business Analytics",
+      "priority": "Vysoká"
+    }
+  },
+  "goal": "Vytvořit komplexní analytickou platformu pro reporting a analýzu dodavatelských dat v BA/BS datamartů. Platforma umožní business uživatelům sledovat výkonnost dodavatelů, identifikovat rizikové partnery a optimalizovat nákupní procesy na základě historických dat.",
+  "scope_in": "Analýza dodavatelů a jejich výkonnosti; Reporting nákupních objednávek; Sledování kvality dodávek (delivery quality metrics); Dimenzionální model pro dodavatelské údaje; Integrace s existujícími BA/BS datamartami.",
+  "scope_out": "HR data o zaměstnancích; Finanční forecasting a budgetování; Real-time monitoring dodávek; Integrace s externími CRM systémy.",
+  "entities": [
+    "Suppliers (dodavatelé)",
+    "Purchase Orders (nákupní objednávky)",
+    "Products (produkty)",
+    "Delivery Performance (výkonnost dodávek)"
+  ],
+  "metrics": [
+    "On-time delivery rate (% včasných dodávek)",
+    "Supplier reliability score (hodnocení spolehlivosti)",
+    "Average order value (průměrná hodnota objednávky)",
+    "Quality defect rate (% vadných dodávek)",
+    "Lead time (průměr)"
+  ],
+  "sources": [
+    "Databricks Unity Catalog (BA/BS datamart schemas)",
+    "Collibra Data Catalog (metadata governance)",
+    "SAP Tables (zdrojové transakční data)",
+    "Historical supplier performance logs"
+  ],
+  "constraints": [
+    "GDPR compliance - žádné osobní údaje bez souhlasu",
+    "Data retention max 5 let",
+    "Maximální response time pro dashboardy: 3 sekundy",
+    "Read-only přístup k produkčním datům",
+    "Row Level Security podle business unit"
+  ],
+  "deliverables": [
+    "ER diagram v Mermaid formátu",
+    "Power Query M skripty pro data refresh",
+    "Governance report (kvalita metadat, validace)",
+    "Security report (RLS návrh, klasifikace)",
+    "Dokumentace datového modelu"
+  ]
+}

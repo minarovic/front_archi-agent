@@ -29,20 +29,6 @@ skill_created: true | false                     # Implementation flag
 ---
 ```
 
-### 3. Definition of Done
-
-**General DoD (all stories):**
-- [ ] Code reviewed and approved
-- [ ] Tests written and passing
-- [ ] Documentation updated
-
-**Skill DoD (when `skill_created: true`):**
-- [ ] Skill implementation exists at declared path
-- [ ] Valid `SKILL.md` with frontmatter (name, description, version, owner)
-- [ ] Skill executed successfully (locally or CI)
-- [ ] Output saved to `scrum/artifacts/YYYY-MM-DD_<skill-name>.json`
-- [ ] README.md with usage instructions
-
 ## LangChain/LangGraph Requirements
 
 ### Mandatory Patterns
@@ -51,16 +37,23 @@ skill_created: true | false                     # Implementation flag
 ```python
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
+from langchain_openai import AzureChatOpenAI
 
-# ✅ CORRECT
+# ✅ CORRECT (Azure AI Foundry)
+AZURE_LLM = AzureChatOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    api_version="2024-10-21"
+)
 agent = create_agent(
-    model="openai:gpt-5-mini",
+    model=AZURE_LLM,
     response_format=ToolStrategy(MySchema)
 )
 
 # ❌ WRONG - deprecated, will fail validation
 agent = create_agent(
-    model="openai:gpt-5-mini",
+    model=AZURE_LLM,
     response_format=MySchema  # Don't pass schema directly
 )
 ```
@@ -158,46 +151,85 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 ## Tool 0 Implementation Guide
 
-**Status:** Planned (not yet implemented)
+**Status:** ✅ Implemented (Pattern A: Direct OpenAI SDK with JSON mode)
 **Path:** `src/tool0/parser.py`
+**Demo Notebook:** `notebooks/tool0_parser_demo.ipynb`
 **Story:** `scrum/backlog/tool0-business-parser.md`
 
-**Requirements:**
-- Parse standardized Markdown business documents
-- Return structured JSON using Pydantic schema
-- Use `ToolStrategy` for structured output
-- Support Czech/English mixed content
-- Fallback to `"unknown"` for missing sections
-- Return tuple: `(parsed_json, raw_response, prompt)`
-- Save samples to `data/tool0_samples/` for regression tests
-
-**Schema Structure:**
-```python
-class ProjectMetadata(BaseModel):
-    project_name: str = Field(description="Project name")
-    sponsor: str = Field(description="Sponsor name")
-    submitted_at: str = Field(description="Date in ISO 8601 format")
-    extra: dict[str, str] = Field(default_factory=dict)
-
-class BusinessRequest(BaseModel):
-    """Parsed business request document."""
-    project_metadata: ProjectMetadata
-    goal: str = Field(default="unknown")
-    scope_in: str = Field(default="unknown")
-    scope_out: str = Field(default="unknown")
-    entities: list[str] = Field(default_factory=list)
-    metrics: list[str] = Field(default_factory=list)
-    sources: list[str] = Field(default_factory=list)
-    constraints: list[str] = Field(default_factory=list)
-    deliverables: list[str] = Field(default_factory=list)
-```
+**Key Points:**
+- Uses OpenAI SDK directly (NOT LangChain agents)
+- JSON mode for structured output (NOT ToolStrategy)
+- Pydantic validation after LLM response
+- See copilot-instructions.md for full schema details
 
 ## Python Environment
 
 - **Version:** Python 3.13
 - **Command:** Always use `python3` (not `python`)
-- **Dependencies:** pyyaml, pydantic, langchain, langgraph
+- **Dependencies:** pyyaml, pydantic, langchain, langgraph, openai, python-dotenv
 - **Date handling:** Use `.isoformat()` for JSON serialization
+
+## Azure AI Foundry Configuration
+
+**Model:** gpt-5-mini-2025-08-07
+**Deployment:** test-gpt-5-mini
+**Region:** Sweden Central
+**API Version:** 2024-10-21
+
+**Environment Setup:** `.env` file (gitignored)
+```bash
+AZURE_OPENAI_ENDPOINT=https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
+AZURE_OPENAI_API_KEY=<your-key>
+AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
+```
+
+**Usage Patterns:**
+
+### Pattern A: Direct OpenAI SDK (Tool 0)
+For simple LLM calls with JSON mode:
+```python
+from openai import OpenAI
+from dotenv import load_dotenv
+
+load_dotenv()
+client = OpenAI(
+    base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY")
+)
+response = client.chat.completions.create(
+    model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    messages=[{"role": "user", "content": "..."}],
+    response_format={"type": "json_object"}
+)
+```
+
+### Pattern B: LangChain Agents (Tool 1, Tool 2)
+For agent-based workflows with LangGraph:
+```python
+from langchain_openai import AzureChatOpenAI
+from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
+from dotenv import load_dotenv
+
+load_dotenv()
+AZURE_LLM = AzureChatOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    api_version="2024-10-21"
+)
+agent = create_agent(
+    model=AZURE_LLM,
+    response_format=ToolStrategy(MySchema),
+    tools=[],
+    system_prompt="..."
+)
+```
+
+**Model Limitations:**
+- Temperature parameter NOT supported (uses default=1)
+- Use JSON mode or ToolStrategy for structured output
+- Test with `test_azure_model.py` before implementing
 
 ## Common Mistakes to Avoid
 
@@ -247,7 +279,11 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 - ✅ Skills framework implemented
 - ✅ Backlog validator working
 - ✅ LangChain compliance checker (Phase 1 - static analysis)
-- ⏭️ Tool 0 implementation pending
+- ✅ Tool 0 implemented with Azure AI Foundry (Pattern A: OpenAI SDK + JSON mode)
+- ✅ All notebooks migrated to Azure:
+  - tool0_parser_demo.ipynb (Pattern A: OpenAI SDK)
+  - tool1_ingest_demo.ipynb (Pattern B: LangChain agents)
+  - tool2_structure_demo.ipynb (Pattern B: LangChain agents)
 
 ### Planned (Phase 2)
 - 🔮 Online docs sync via MCP tool
@@ -264,34 +300,10 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 - `docs_langgraph/rag.md` - RAG patterns
 - `scrum/backlog/_STORY_TEMPLATE.md` - Story template
 - `/memories/scrum-skills-implementation.md` - Implementation notes
+- `/memories/azure-ai-foundry-setup.md` - Azure model configuration
 
 **Online:**
 - https://docs.langchain.com/mcp (via MCP tool)
-
-## File Structure
-
-```
-archi-agent/
-├── .github/
-│   └── copilot-instructions.md       # GitHub Copilot config
-├── .claude/skills/
-│   ├── scrum/backlog-validator/      # Validates story frontmatter
-│   └── langchain/compliance-checker/ # Validates LangChain code
-├── scrum/
-│   ├── artifacts/                    # Skill execution logs (auto-generated)
-│   └── backlog/
-│       ├── _STORY_TEMPLATE.md        # Template (skip in validators)
-│       ├── tool0-business-parser.md  # Tool 0 story
-│       ├── mcop-mvp-v1-scope.md      # MVP scope
-│       └── mcop-project-overview.md  # Project overview
-├── docs_langgraph/                   # LangChain/LangGraph docs
-│   ├── structured_output.md
-│   ├── workflow_agents.md
-│   └── rag.md
-├── src/                              # Source code (Tool 0-7)
-├── data/                             # Samples and test data
-└── AGENTS.md                         # This file
-```
 
 ## Decision Framework
 

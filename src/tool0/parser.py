@@ -4,6 +4,7 @@ Business Request Parser (Tool 0) - MVP Implementation
 Parses standardized Markdown business documents into structured JSON using LangGraph.
 Uses create_agent with response_format for structured output.
 """
+
 from typing import Tuple, Dict, Any
 from langchain.agents import create_agent
 from .schemas import BusinessRequest
@@ -33,8 +34,7 @@ IMPORTANT INSTRUCTIONS:
 
 
 def parse_business_request(
-    document: str,
-    model: str = "openai:gpt-4o-mini"
+    document: str, model: str = "openai:gpt-4o-mini"
 ) -> Tuple[Dict[str, Any], str, str]:
     """Parse a business request document into structured JSON.
 
@@ -67,13 +67,13 @@ def parse_business_request(
     """
     try:
         # Create agent with structured output
-        # When passing schema directly, LangGraph auto-selects:
-        # - ProviderStrategy for models with native support (OpenAI, Grok)
-        # - ToolStrategy for other models
+        # Always use explicit ToolStrategy wrapper for consistency
+        from langchain.agents.structured_output import ToolStrategy
+
         agent = create_agent(
             model=model,
-            response_format=BusinessRequest,  # Auto-selects best strategy
-            system_prompt=SYSTEM_PROMPT
+            response_format=ToolStrategy(BusinessRequest),
+            system_prompt=SYSTEM_PROMPT,
         )
 
         # Prepare user message
@@ -84,11 +84,7 @@ def parse_business_request(
 Extract all information into the structured format."""
 
         # Invoke agent
-        result = agent.invoke({
-            "messages": [
-                {"role": "user", "content": user_message}
-            ]
-        })
+        result = agent.invoke({"messages": [{"role": "user", "content": user_message}]})
 
         # Extract structured response
         structured_response = result.get("structured_response")
@@ -97,10 +93,18 @@ Extract all information into the structured format."""
             raise ValueError("No structured response returned from agent")
 
         # Convert to dict
-        parsed_json = structured_response.model_dump() if hasattr(structured_response, 'model_dump') else structured_response.dict()
+        parsed_json = (
+            structured_response.model_dump()
+            if hasattr(structured_response, "model_dump")
+            else structured_response.dict()
+        )
 
         # Extract raw response (full message content if available)
-        raw_response = str(result.get("messages", [])[-1] if result.get("messages") else structured_response)
+        raw_response = str(
+            result.get("messages", [])[-1]
+            if result.get("messages")
+            else structured_response
+        )
 
         # Full prompt for audit
         full_prompt = f"System: {SYSTEM_PROMPT}\n\nUser: {user_message}"
@@ -117,7 +121,7 @@ def parse_business_request_with_logging(
     document: str,
     model: str = "openai:gpt-4o-mini",
     log_to_file: bool = False,
-    output_dir: str = "data/tool0_samples"
+    output_dir: str = "data/tool0_samples",
 ) -> Tuple[Dict[str, Any], str, str]:
     """Parse business request and optionally log results to file.
 
@@ -149,16 +153,18 @@ def parse_business_request_with_logging(
 
         # Save JSON result
         json_file = output_path / f"{timestamp}.json"
-        with open(json_file, 'w', encoding='utf-8') as f:
+        with open(json_file, "w", encoding="utf-8") as f:
             json.dump(parsed_json, f, indent=2, ensure_ascii=False)
 
         # Save prompt and raw response
         md_file = output_path / f"{timestamp}.md"
-        with open(md_file, 'w', encoding='utf-8') as f:
+        with open(md_file, "w", encoding="utf-8") as f:
             f.write(f"# Parse Request - {timestamp}\n\n")
             f.write(f"## Prompt\n\n{prompt}\n\n")
             f.write(f"## Raw Response\n\n{raw_response}\n\n")
-            f.write(f"## Parsed JSON\n\n```json\n{json.dumps(parsed_json, indent=2, ensure_ascii=False)}\n```\n")
+            f.write(
+                f"## Parsed JSON\n\n```json\n{json.dumps(parsed_json, indent=2, ensure_ascii=False)}\n```\n"
+            )
 
         print(f"✅ Results saved to {output_dir}/")
         print(f"   - {json_file.name}")

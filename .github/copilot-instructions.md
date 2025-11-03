@@ -65,17 +65,24 @@ skill_created: true | false
    ```python
    from langchain.agents import create_agent
    from langchain.agents.structured_output import ToolStrategy
+   from langchain_openai import AzureChatOpenAI
 
-   # ✅ CORRECT
+   # ✅ CORRECT (Azure AI Foundry)
+   AZURE_LLM = AzureChatOpenAI(
+       azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+       api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+       azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+       api_version="2024-10-21"
+   )
    agent = create_agent(
-       model="openai:gpt-5-mini",
+       model=AZURE_LLM,
        response_format=ToolStrategy(MySchema)
    )
 
-   # ❌ INCORRECT - deprecated
+   # ❌ INCORRECT - deprecated (passing schema directly)
    agent = create_agent(
-       model="openai:gpt-5-mini",
-       response_format=MySchema
+       model=AZURE_LLM,
+       response_format=MySchema  # Don't pass schema directly
    )
    ```
 
@@ -148,12 +155,13 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 ## Tool 0 (Business Request Parser) Specifics
 
-**Status:** Planned (not yet implemented)
+**Status:** ✅ Implemented (using Azure AI Foundry)
 **Implementation Path:** `src/tool0/parser.py`
+**Demo Notebook:** `notebooks/tool0_parser_demo.ipynb`
 **Key Requirements:**
 - Parse standardized Markdown business documents
 - Return structured JSON via Pydantic schema
-- Use LangChain structured output (ToolStrategy)
+- Use OpenAI SDK with JSON mode (NOT LangChain/ToolStrategy)
 - Support Czech/English mixed content
 - Fallback to "unknown" for missing sections
 - Return tuple: `(parsed_json, raw_response, prompt)`
@@ -175,7 +183,52 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 **Version:** Python 3.13
 **Command:** Use `python3` (not `python`)
-**Key Dependencies:** pyyaml, pydantic, langchain, langgraph
+**Key Dependencies:** pyyaml, pydantic, langchain, langgraph, openai, python-dotenv
+
+## Azure AI Foundry Configuration
+
+**Model:** gpt-5-mini-2025-08-07
+**Deployment:** test-gpt-5-mini
+**Region:** Sweden Central
+**API Version:** 2024-10-21
+
+**Environment variables** (`.env` file, gitignored):
+```
+AZURE_OPENAI_ENDPOINT=https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
+AZURE_OPENAI_API_KEY=<your-key>
+AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
+```
+
+**Two usage patterns:**
+
+1. **Pattern A (Tool 0):** Direct OpenAI SDK with JSON mode
+   ```python
+   from openai import OpenAI
+   client = OpenAI(
+       base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
+       api_key=os.getenv("AZURE_OPENAI_API_KEY")
+   )
+   response = client.chat.completions.create(
+       model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+       response_format={"type": "json_object"}
+   )
+   ```
+
+2. **Pattern B (Tool 1, Tool 2):** LangChain agents with AzureChatOpenAI
+   ```python
+   from langchain_openai import AzureChatOpenAI
+   AZURE_LLM = AzureChatOpenAI(
+       azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+       api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+       azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+       api_version="2024-10-21"
+   )
+   agent = create_agent(model=AZURE_LLM, ...)
+   ```
+
+**Model limitations:**
+- Temperature parameter NOT supported (uses default=1)
+- Use JSON mode or ToolStrategy for structured output
 
 ## Common Pitfalls to Avoid
 
@@ -215,7 +268,8 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 - ✅ Skills framework implemented
 - ✅ Backlog validator working
 - ✅ LangChain compliance checker (Phase 1)
-- ⏭️ Tool 0 implementation pending
+- ✅ Tool 0 implemented with Azure AI Foundry
+- ✅ All notebooks migrated to Azure (tool0, tool1, tool2)
 
 ### Phase 2 (Planned)
 - Online docs sync via MCP tool
@@ -228,7 +282,7 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 
 **Documentation:**
 - Local: `docs_langgraph/*.md`
-- Memory: `/memories/scrum-skills-implementation.md`
+- Memory: `/memories/scrum-skills-implementation.md`, `/memories/azure-ai-foundry-setup.md`
 - Template: `scrum/backlog/_STORY_TEMPLATE.md`
 
 **Skills Pattern Reference:**
