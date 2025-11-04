@@ -75,19 +75,40 @@ Poznámky:
 
 ## 3) Data‑quality audit (připravenost pro Tool 1)
 
-Proveď data‑quality audit souboru docs_langgraph/BA-BS_Datamarts_metadata.json #runSubagent.
+Proveď detailní data‑quality audit souboru docs_langgraph/BA-BS_Datamarts_metadata.json #runSubagent.
 
 Zaměř se na:
-- Integritu schématu (konzistence klíčů, typy hodnot).
-- Identifikaci „primary‑like“ a „foreign‑like“ klíčů.
-- Detekci duplicit a chybějících kritických polí.
-- Mapovatelná pole na entities/metrics/sources pro Tool 1.
-- Seznam rychlých fixů, které zvýší úspěšnost ingestu a filtrování.
+- Integritu schématu: konzistence top-level klíčů, datové typy hodnot, povinná pole (`table_name`, `business_definition`, `source_system`, atd.), prázdné/`null` hodnoty.
+- Identifikaci „primary-like“ (`*_id`, `business_key`, unikátní kombinace) a „foreign-like“ klíčů (reference na jiné entity, `*_fk`, `parent_table`). U každého uveď JSONPath + důvod.
+- Detekci duplicit názvů tabulek/entit, kolizních aliasů, chybějících kritických polí (owner, lineage, SLA) a nekonzistentních hodnot (např. pole jednou string, jednou list).
+- Mapovatelnost na Tool 1: extrahuj pole vhodná pro `entities[]`, `metrics[]`, `sources[]`, `constraints[]`, uveď procento záznamů, kde jsou tyto informace dostupné.
+- Anomaly check: highlight struktury, které se odchylují od schématu (neznámé klíče, neočekávané vnoření, nevalidní JSON) a navrhni, jak je standardizovat.
 
-Výstup:
-- „Findings“ v odrážkách s odkazem na konkrétní klíče/oddíly.
-- „Quick fixes“ (do 10 bodů, akční a konkrétní).
-- „Readiness score“ (0–100) + krátké zdůvodnění.
+Výstup musí obsahovat:
+- **Findings** –箇 bullet list; každá položka obsahuje klasifikaci (`schema`, `keys`, `duplication`, `mapping`, `anomaly`), JSONPath/sekci a dopad na Tool 1.
+- **Quick fixes** – max 10 konkrétních kroků (např. „doplnit `business_owner` pro tabulky XYZ“), označ priority (P0/P1/P2).
+- **Readiness score** – číslo 0–100 + jedna věta zdůvodnění (co drží skóre zpět).
+- **Coverage table** – Markdown tabulka se sloupci `Field`, `% present`, `Notes` pro klíčová pole (definition, owner, source_system, lineage, metrics, constraints).
+- **JSON summary** – validní JSON blok:
+  ```json
+  {
+    "readiness_score": 0,
+    "key_candidates": {
+      "primary_like": ["..."],
+      "foreign_like": ["..."]
+    },
+    "missing_fields": ["..."],
+    "duplicates": ["..."],
+    "mapping_coverage": {
+      "entities": 0.0,
+      "metrics": 0.0,
+      "sources": 0.0,
+      "constraints": 0.0
+    },
+    "quick_fixes": ["..."]
+  }
+  ```
+  (vyplň reálnými hodnotami).
 
 ---
 

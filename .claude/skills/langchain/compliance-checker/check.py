@@ -24,25 +24,25 @@ class LangChainComplianceChecker:
 
     DEPRECATED_PATTERNS = [
         {
-            "pattern": r"response_format=\w+\(",  # Direct schema without strategy
+            "pattern": r"response_format=(?!ToolStrategy|ProviderStrategy)\w+\(",  # Direct schema without strategy
             "message": "Deprecated: Pass schema directly. Use ToolStrategy() or ProviderStrategy()",
             "severity": "error",
-            "docs_ref": "docs_langgraph/structured_output.md"
+            "docs_ref": "docs_langgraph/structured_output.md",
         },
         {
             "pattern": r"from langchain\.prebuilt import create_react_agent",
             "message": "Use 'from langchain.agents import create_agent' instead",
             "severity": "warning",
-            "docs_ref": "docs_langgraph/structured_output.md"
-        }
+            "docs_ref": "docs_langgraph/structured_output.md",
+        },
     ]
 
     REQUIRED_PATTERNS = [
         {
             "context": "Pydantic BaseModel fields",
-            "pattern": r'Field\([^)]*description=',
+            "pattern": r"Field\([^)]*description=",
             "message": "Pydantic fields should have descriptions",
-            "severity": "warning"
+            "severity": "warning",
         }
     ]
 
@@ -63,7 +63,7 @@ class LangChainComplianceChecker:
         issues = []
 
         try:
-            content = file_path.read_text(encoding='utf-8')
+            content = file_path.read_text(encoding="utf-8")
             tree = ast.parse(content, filename=str(file_path))
 
             # Check imports
@@ -79,29 +79,35 @@ class LangChainComplianceChecker:
             issues.extend(self._check_create_agent_usage(tree, file_path, content))
 
         except SyntaxError as e:
-            issues.append({
-                "file": str(file_path.relative_to(Path.cwd())),
-                "line": e.lineno,
-                "severity": "error",
-                "issue": f"Syntax error: {e.msg}",
-                "recommendation": "Fix Python syntax errors first"
-            })
+            issues.append(
+                {
+                    "file": str(file_path.relative_to(Path.cwd())),
+                    "line": e.lineno,
+                    "severity": "error",
+                    "issue": f"Syntax error: {e.msg}",
+                    "recommendation": "Fix Python syntax errors first",
+                }
+            )
         except Exception as e:
-            issues.append({
-                "file": self._safe_relative_path(file_path),
-                "line": 0,
-                "severity": "error",
-                "issue": f"Failed to parse file: {str(e)}",
-                "recommendation": "Check file encoding and syntax"
-            })
+            issues.append(
+                {
+                    "file": self._safe_relative_path(file_path),
+                    "line": 0,
+                    "severity": "error",
+                    "issue": f"Failed to parse file: {str(e)}",
+                    "recommendation": "Check file encoding and syntax",
+                }
+            )
 
         return {
             "file": self._safe_relative_path(file_path),
             "compliant": len([i for i in issues if i["severity"] == "error"]) == 0,
-            "issues": issues
+            "issues": issues,
         }
 
-    def _check_imports(self, tree: ast.AST, file_path: Path, content: str) -> List[Dict]:
+    def _check_imports(
+        self, tree: ast.AST, file_path: Path, content: str
+    ) -> List[Dict]:
         """Check import statements."""
         issues = []
         found_imports = set()
@@ -121,15 +127,19 @@ class LangChainComplianceChecker:
                                 is_valid = True
                                 break
 
-                        if not is_valid and not module.startswith("langchain.chat_models"):
-                            issues.append({
-                                "file": self._safe_relative_path(file_path),
-                                "line": node.lineno,
-                                "severity": "warning",
-                                "issue": f"Unverified import: from {module} import {alias.name}",
-                                "recommendation": "Verify this import against LangChain docs",
-                                "docs_reference": "docs_langgraph/structured_output.md"
-                            })
+                        if not is_valid and not module.startswith(
+                            "langchain.chat_models"
+                        ):
+                            issues.append(
+                                {
+                                    "file": self._safe_relative_path(file_path),
+                                    "line": node.lineno,
+                                    "severity": "warning",
+                                    "issue": f"Unverified import: from {module} import {alias.name}",
+                                    "recommendation": "Verify this import against LangChain docs",
+                                    "docs_reference": "docs_langgraph/structured_output.md",
+                                }
+                            )
 
         return issues
 
@@ -143,21 +153,25 @@ class LangChainComplianceChecker:
 
             for match in matches:
                 # Calculate line number
-                line_num = content[:match.start()].count('\n') + 1
+                line_num = content[: match.start()].count("\n") + 1
 
-                issues.append({
-                    "file": self._safe_relative_path(file_path),
-                    "line": line_num,
-                    "severity": pattern_def["severity"],
-                    "issue": pattern_def["message"],
-                    "recommendation": f"See {pattern_def['docs_ref']}",
-                    "docs_reference": pattern_def["docs_ref"],
-                    "code_snippet": match.group(0)
-                })
+                issues.append(
+                    {
+                        "file": self._safe_relative_path(file_path),
+                        "line": line_num,
+                        "severity": pattern_def["severity"],
+                        "issue": pattern_def["message"],
+                        "recommendation": f"See {pattern_def['docs_ref']}",
+                        "docs_reference": pattern_def["docs_ref"],
+                        "code_snippet": match.group(0),
+                    }
+                )
 
         return issues
 
-    def _check_pydantic_models(self, tree: ast.AST, file_path: Path, content: str) -> List[Dict]:
+    def _check_pydantic_models(
+        self, tree: ast.AST, file_path: Path, content: str
+    ) -> List[Dict]:
         """Check Pydantic BaseModel definitions."""
         issues = []
 
@@ -172,39 +186,53 @@ class LangChainComplianceChecker:
                 if is_pydantic:
                     # Check if class has docstring
                     if not ast.get_docstring(node):
-                        issues.append({
-                            "file": self._safe_relative_path(file_path),
-                            "line": node.lineno,
-                            "severity": "warning",
-                            "issue": f"Pydantic model '{node.name}' missing docstring",
-                            "recommendation": "Add class docstring describing the model",
-                            "docs_reference": "docs_langgraph/structured_output.md"
-                        })
+                        issues.append(
+                            {
+                                "file": self._safe_relative_path(file_path),
+                                "line": node.lineno,
+                                "severity": "warning",
+                                "issue": f"Pydantic model '{node.name}' missing docstring",
+                                "recommendation": "Add class docstring describing the model",
+                                "docs_reference": "docs_langgraph/structured_output.md",
+                            }
+                        )
 
                     # Check fields have descriptions
                     for item in node.body:
-                        if isinstance(item, ast.AnnAssign) and isinstance(item.target, ast.Name):
+                        if isinstance(item, ast.AnnAssign) and isinstance(
+                            item.target, ast.Name
+                        ):
                             field_name = item.target.id
 
                             # Check if Field() is used
                             if item.value:
-                                field_code = ast.unparse(item.value) if hasattr(ast, 'unparse') else ""
+                                field_code = (
+                                    ast.unparse(item.value)
+                                    if hasattr(ast, "unparse")
+                                    else ""
+                                )
 
                                 if "Field(" in field_code:
                                     # Check for description parameter
                                     if "description=" not in field_code:
-                                        issues.append({
-                                            "file": self._safe_relative_path(file_path),
-                                            "line": item.lineno,
-                                            "severity": "warning",
-                                            "issue": f"Field '{field_name}' in model '{node.name}' missing description",
-                                            "recommendation": "Add Field(..., description='...')",
-                                            "docs_reference": "docs_langgraph/structured_output.md"
-                                        })
+                                        issues.append(
+                                            {
+                                                "file": self._safe_relative_path(
+                                                    file_path
+                                                ),
+                                                "line": item.lineno,
+                                                "severity": "warning",
+                                                "issue": f"Field '{field_name}' in model '{node.name}' missing description",
+                                                "recommendation": "Add Field(..., description='...')",
+                                                "docs_reference": "docs_langgraph/structured_output.md",
+                                            }
+                                        )
 
         return issues
 
-    def _check_create_agent_usage(self, tree: ast.AST, file_path: Path, content: str) -> List[Dict]:
+    def _check_create_agent_usage(
+        self, tree: ast.AST, file_path: Path, content: str
+    ) -> List[Dict]:
         """Check create_agent function calls."""
         issues = []
 
@@ -225,17 +253,26 @@ class LangChainComplianceChecker:
 
                         # Check if it's wrapped in ToolStrategy or ProviderStrategy
                         if isinstance(response_format_kw.value, ast.Call):
-                            func_name = ast.unparse(response_format_kw.value.func) if hasattr(ast, 'unparse') else ""
+                            func_name = (
+                                ast.unparse(response_format_kw.value.func)
+                                if hasattr(ast, "unparse")
+                                else ""
+                            )
 
-                            if "ToolStrategy" not in func_name and "ProviderStrategy" not in func_name:
-                                issues.append({
-                                    "file": self._safe_relative_path(file_path),
-                                    "line": node.lineno,
-                                    "severity": "error",
-                                    "issue": "response_format should use ToolStrategy() or ProviderStrategy()",
-                                    "recommendation": "Wrap schema in ToolStrategy(schema) or ProviderStrategy(schema)",
-                                    "docs_reference": "docs_langgraph/structured_output.md"
-                                })
+                            if (
+                                "ToolStrategy" not in func_name
+                                and "ProviderStrategy" not in func_name
+                            ):
+                                issues.append(
+                                    {
+                                        "file": self._safe_relative_path(file_path),
+                                        "line": node.lineno,
+                                        "severity": "error",
+                                        "issue": "response_format should use ToolStrategy() or ProviderStrategy()",
+                                        "recommendation": "Wrap schema in ToolStrategy(schema) or ProviderStrategy(schema)",
+                                        "docs_reference": "docs_langgraph/structured_output.md",
+                                    }
+                                )
 
         return issues
 
@@ -288,8 +325,12 @@ def main():
     non_compliant_files = total_files - compliant_files
 
     total_issues = sum(len(r["issues"]) for r in results)
-    errors = sum(len([i for i in r["issues"] if i["severity"] == "error"]) for r in results)
-    warnings = sum(len([i for i in r["issues"] if i["severity"] == "warning"]) for r in results)
+    errors = sum(
+        len([i for i in r["issues"] if i["severity"] == "error"]) for r in results
+    )
+    warnings = sum(
+        len([i for i in r["issues"] if i["severity"] == "warning"]) for r in results
+    )
 
     summary = {
         "timestamp": datetime.now().isoformat(),
@@ -300,7 +341,7 @@ def main():
         "total_issues": total_issues,
         "errors": errors,
         "warnings": warnings,
-        "results": results
+        "results": results,
     }
 
     # Save to artifacts

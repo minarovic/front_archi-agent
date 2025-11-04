@@ -1,0 +1,61 @@
+{
+  "readiness_score": 28.1,
+  "key_candidates": {
+    "primary_like": [
+      "$[0][0].id - UUID format - unique identifier for each asset",
+      "$[0][1].id - UUID format - unique identifier for each asset",
+      "$[1][0].id - UUID format - unique identifier for each asset",
+      "$[1][1].id - UUID format - unique identifier for each asset",
+      "$[1][2].id - UUID format - unique identifier for each asset",
+      "$[1][3].id - UUID format - unique identifier for each asset",
+      "$[1][4].id - UUID format - unique identifier for each asset",
+      "$[1][5].id - UUID format - unique identifier for each asset",
+      "$[1][6].id - UUID format - unique identifier for each asset",
+      "$[1][7].id - UUID format - unique identifier for each asset"
+    ],
+    "foreign_like": [
+      "$[0][0].Hierarcy Relation - References parent entity in hierarchy",
+      "$[0][0].ownerInSource - References owner entity (person/role)",
+      "$[0][1].Hierarcy Relation - References parent entity in hierarchy",
+      "$[0][1].ownerInSource - References owner entity (person/role)",
+      "$[1][0].Hierarcy Relation - References parent entity in hierarchy",
+      "$[1][0].ownerInSource - References owner entity (person/role)",
+      "$[1][1].Hierarcy Relation - References parent entity in hierarchy",
+      "$[1][1].ownerInSource - References owner entity (person/role)",
+      "$[1][2].Hierarcy Relation - References parent entity in hierarchy",
+      "$[1][2].ownerInSource - References owner entity (person/role)"
+    ]
+  },
+  "missing_fields": [
+    "businessName: 2180 records",
+    "description: 2056 records",
+    "ownerInSource: 2000 records"
+  ],
+  "duplicates": [
+    "dimv_accounting_currency: 2 occurrences",
+    "dimv_approver_1_person: 2 occurrences",
+    "dimv_approver_2_person: 2 occurrences",
+    "dimv_approver_3_person: 2 occurrences",
+    "dimv_approver_4_person: 2 occurrences",
+    "dimv_cost_center: 2 occurrences",
+    "dimv_creator_person: 2 occurrences",
+    "dimv_currency: 2 occurrences",
+    "dimv_delivery_reference_supplier: 2 occurrences",
+    "dimv_document_created_date: 2 occurrences"
+  ],
+  "mapping_coverage": {
+    "entities": 1.0,
+    "metrics": 0.93,
+    "sources": 0.0,
+    "constraints": 1.0
+  },
+  "quick_fixes": [
+    "P0: Add business_owner metadata to 2000 records missing ownership",
+    "P0: Complete description field for 2056 records",
+    "P1: Standardize type definitions - found 3 unique types",
+    "P1: Add businessName to 2180 records for improved discoverability",
+    "P2: Review and deduplicate 107 duplicate displayNames",
+    "P2: Investigate 0 type inconsistencies across fields",
+    "P2: Enrich SAP source mappings - only 0.1% have this metadata"
+  ]
+}

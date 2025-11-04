@@ -1,0 +1,30 @@
+{
+  "timestamp": "2025-11-03T19:33:08.073668",
+  "metrics": {
+    "total_facts": 2,
+    "total_dimensions": 2,
+    "total_hierarchies": 1,
+    "total_relationships": 1,
+    "coverage": 1.0,
+    "unresolved_entities": [
+      "Purchase Orders (nákupní objednávky)",
+      "Products (produkty)",
+      "Delivery Performance (výkonnost dodávek)",
+      "Suppliers (dodavatelé)"
+    ]
+  },
+  "business_context": {
+    "entities": [
+      "Suppliers (dodavatelé)",
+      "Purchase Orders (nákupní objednávky)",
+      "Products (produkty)",
+      "Delivery Performance (výkonnost dodávek)"
+    ],
+    "scope_out": "unknown",
+    "timestamp": "2025-11-01T00:23:16.039969"
+  },
+  "source_files": {
+    "tool1_mappings": "../data/tool1/filtered_dataset.json",
+    "full_metadata": "../docs_langgraph/BA-BS_Datamarts_metadata.json"
+  }
+}
