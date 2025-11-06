@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-11-04T09:59:28.170551",
+  "metrics": {
+    "total_entities": 4,
+    "avg_articulation_score": 45.0,
+    "entities_with_issues": 4,
+    "p0_blockers": 8,
+    "coverage": 0.0
+  },
+  "risk_level": "high",
+  "p0_recommendations": [
+    {
+      "priority": "P0",
+      "entity_id": null,
+      "issue_type": "MISSING_ENTITY",
+      "description": "Business-requested entity 'delivery performance' (výkonnost dodávek) is missing from the metadata/catalog.",
+      "action": "Create a Collibra asset for 'delivery performance (výkonnost dodávek)'. Populate a clear bilingual (EN/CZ) business description, assign a business owner/steward with contact info, set relevant technical links (Unity Catalog table if available), and publish. Run Collibra → Unity Catalog sync so the asset appears in the catalog used by consumers.",
+      "estimated_impact": "Removes the P0 block for this business request and enables governance and discovery for delivery performance."
+    },
+    {
+      "priority": "P0",
+      "entity_id": null,
+      "issue_type": "MISSING_ENTITY",
+      "description": "Business-requested entity 'products' (produkty) is missing from the metadata/catalog.",
+      "action": "Create a Collibra asset for 'products (produkty)' with a bilingual business description, assign owner/steward, attach examples and primary keys, and publish. Sync to Unity Catalog.",
+      "estimated_impact": "Restores discoverability for product data and satisfies the business request."
+    },
+    {
+      "priority": "P0",
+      "entity_id": null,
+      "issue_type": "MISSING_ENTITY",
+      "description": "Business-requested entity 'purchase orders' (nákupní objednávky) is missing from the metadata/catalog.",
+      "action": "Create a Collibra asset for 'purchase orders (nákupní objednávky)' including a business description, owner/steward, and mapping to factv_purchase_order (if that is the technical table). Publish and sync to Unity Catalog.",
+      "estimated_impact": "Unblocks business users and links the business term to the technical asset (factv_purchase_order)."
+    },
+    {
+      "priority": "P0",
+      "entity_id": null,
+      "issue_type": "MISSING_ENTITY",
+      "description": "Business-requested entity 'suppliers' (dodavatelé) is missing from the metadata/catalog.",
+      "action": "Create a Collibra asset for 'suppliers (dodavatelé)' with bilingual description, assign owner/steward, and map to dimv_supplier technical table. Publish and sync to Unity Catalog.",
+      "estimated_impact": "Enables supplier data governance and discovery; links business and technical metadata."
+    },
+    {
+      "priority": "P0",
+      "entity_id": "factv_purchase_order",
+      "issue_type": "MISSING_DESCRIPTION_OR_OWNER",
+      "description": "factv_purchase_order shows a 'warning' validation and low articulation (45) — likely missing a complete business description and owner.",
+      "action": "In Collibra, add a clear business description (purpose, key measures, example rows), assign a business owner/steward and contact, and confirm technical metadata (schema, primary keys). Publish and sync to Unity Catalog.",
+      "estimated_impact": "+20–30 articulation score; unblocks business use and incident response."
+    },
+    {
+      "priority": "P0",
+      "entity_id": "factv_delivery_performance",
+      "issue_type": "MISSING_DESCRIPTION_OR_OWNER",
+      "description": "factv_delivery_performance has a warning and low articulation score; business context or owner is likely missing.",
+      "action": "Add a bilingual business description in Collibra, assign a data owner/steward, include sample queries and consumers, then publish and sync to Unity Catalog.",
+      "estimated_impact": "+20–30 articulation score; improves trust and usability."
+    },
+    {
+      "priority": "P0",
+      "entity_id": "dimv_supplier",
+      "issue_type": "MISSING_DESCRIPTION_OR_OWNER",
+      "description": "dimv_supplier shows a warning and low articulation; likely missing owner and business description.",
+      "action": "Add a business description in Collibra describing supplier attributes and hierarchy, assign an owner/steward, and sync to Unity Catalog.",
+      "estimated_impact": "+15–25 articulation score; clearer stewardship and easier onboarding."
+    },
+    {
+      "priority": "P0",
+      "entity_id": "dimv_product",
+      "issue_type": "MISSING_DESCRIPTION_OR_OWNER",
+      "description": "dimv_product has a warning and low articulation score; business description or owner is likely missing.",
+      "action": "Add a business description (product hierarchy, common usage), assign business owner/steward in Collibra, and sync to Unity Catalog.",
+      "estimated_impact": "+15–25 articulation score; improves metadata completeness."
+    }
+  ],
+  "llm_fallback_mode": false,
+  "source_files": {
+    "structure": "../data/tool2/structure.json",
+    "business_context": "Most recent from ../data/tool0_samples/"
+  }
+}

@@ -1,29 +1,28 @@
-# Požadavek na datový projekt
+# Nákupní data – požadavek na harmonizaci
 
 ## Projekt
-**Název:** BA/BS Supplier Analytics Platform
-**Sponzor:** Marie Dvořáková
-**Datum:** 2025-10-25
-**Oddělení:** Business Analytics
+**Název:** Procurement Data Harmonization Pilot  
+**Sponzor:** Tomáš Matouš, Head of Strategic Sourcing  
+**Datum:** 2025-10-28  
+**Oddělení:** Procurement Excellence Office  
 **Priorita:** Vysoká
 
 ## Cíl
-Vytvořit komplexní analytickou platformu pro reporting a analýzu dodavatelských dat v BA/BS datamartů. Platforma umožní business uživatelům sledovat výkonnost dodavatelů, identifikovat rizikové partnery a optimalizovat nákupní procesy na základě historických dat.
+Pilotně sjednotit nákupní data napříč existujícími BA/BS datamarty tak, aby bylo možné spolehlivě mapovat nákupní entity na dostupné kandidátní zdroje. Výstup má potvrdit, že sourcing tým dokáže rychle identifikovat vhodná datová aktiva pro analýzy dodavatelů, skladových zásob a souvisejících procesů.
 
 ## Rozsah
 
 ### In Scope
-- Analýza dodavatelů (suppliers) a jejich výkonnosti
-- Reporting nákupních objednávek (purchase orders)
-- Sledování kvality dodávek (delivery quality metrics)
-- Dimenzionální model pro dodavatelské údaje
-- Integrace s existujícími BA/BS datamartami
+- Harmonizace klíčových nákupních entit (Suppliers, Purchase Orders, Products, Warehouse Inventory)
+- Validace kvality mapování vůči kandidátním datovým sadám (dm_bs_purchase, dm_bs_logistics)
+- Definice pravidel pro odmítnutí nekorektních kandidátů (např. HR datové sady)
+- Dokumentace rozhodovacích kritérií a confidence skóre
 
 ### Out of Scope
-- HR data o zaměstnancích
-- Finanční forecasting a budgetování
+- HR data o zaměstnancích a forecasty kapacit
+- Finanční forecasting a plánování rozpočtů
 - Real-time monitoring dodávek
-- Integrace s externí CRM systémy
+- Integrace s externími CRM/Service desk systémy
 
 ## Klíčové entity & metriky
 
@@ -31,31 +30,29 @@ Vytvořit komplexní analytickou platformu pro reporting a analýzu dodavatelsk�
 - Suppliers (dodavatelé)
 - Purchase Orders (nákupní objednávky)
 - Products (produkty)
-- Delivery Performance (výkonnost dodávek)
+- Warehouse Inventory (skladové zásoby)
+- Customer Complaints (stížnosti zákazníků) – používá se pro test nízké shody
 
 ### Metriky
-- On-time delivery rate (% včasných dodávek)
-- Supplier reliability score (hodnocení spolehlivosti)
-- Average order value (průměrná hodnota objednávky)
-- Quality defect rate (% vadných dodávek)
-- Lead time průměr
+- Confidence skóre mapování (0–1)
+- % entit s jednoznačným kandidátem (>0.85)
+- Počet zamítnutých kandidátů kvůli scope_out omezením
+- Čas potřebný k manuálnímu ověření (baseline pro úsporu času)
 
 ## Očekávané zdroje
-- Databricks Unity Catalog (BA/BS datamart schemas)
-- Collibra Data Catalog (metadata governance)
-- SAP Tables (zdrojové transakční data)
-- Historical supplier performance logs
+- Databricks Unity Catalog – dm_bs_purchase, dm_bs_logistics
+- Collibra Data Catalog – popisy kandidátních sad a jejich stewardi
+- SAP MM – referenční klíče pro nákupní objednávky a skladové pohyby
+- Historické výstupy Quality Validatoru (kvůli porovnání confidence trendů)
 
 ## Omezení
-- GDPR compliance - žádné osobní údaje bez souhlasu
-- Data retention max 5 let
-- Maximální response time pro dashboardy: 3 sekundy
-- Read-only přístup k produkčním datům
-- Row Level Security podle business unit
+- GDPR: bez osobních údajů; zákaz práce s HR atributy
+- Scope_out blacklist: HR datové sady, forecasting, real-time streaming
+- Stabilní API pro načítání metadat z Collibry (denní refresh)
+- Všechny výsledky musí být exportovatelné ve formátu JSON s `.isoformat()` daty
 
 ## Požadované artefakty
-- ER diagram v Mermaid formátu
-- Power Query M skripty pro data refresh
-- Governance report (kvalita metadat, validace)
-- Security report (RLS návrh, klasifikace)
-- Dokumentace datového modelu
+- Mapping report s confidence skóre pro každou entitu
+- Audit trail uložený v `scrum/artifacts/` (název: `<datum>_procurement-mapping.json`)
+- Směrnice pro odmítnuté kandidáty (včetně zmínky o scope_out pravidlech)
+- Aktualizovaný návod pro Test Scenarios for Entity Mapping (QA tým)

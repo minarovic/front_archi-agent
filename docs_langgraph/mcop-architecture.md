@@ -883,6 +883,22 @@ print(f"✅ Pipeline completed in {result['total_duration']:.2f}s")
 print(f"📄 Governance report: {len(result['governance_report'])} characters")
 ```
 
+### 8.7 Cross-domain Incident Drill (Supplier Disruption)
+
+> **Účel:** Validovat, že orchestrátor zvládne incident ve supply chain, kdy jeden klíčový dodavatel vypadne. Scénář udržuje zaměření na procurement workflow, ale rozšiřuje ho o logistiku (zásoby) a kusovník (BOM), aby se otestovala spolupráce Tool 0–3 na „živém“ use-casu.
+
+- **Vstup (Tool 0):** Business dokument obsahuje entitu `Supplier Disruption Incident`, kde je popsaný výpadek dodavatele, seznam kritických výrobků (BOM nodes) a požadavek na nalezení alternativních dodavatelů / skladových zásob. Scope_out ponechává HR a forecasting mimo hru.
+- **Ingest (Tool 1):** Filtruje kandidáty ve třech doménách: procurement (`dm_bs_purchase`, kontraktační logy), logistika (`dm_bs_logistics`, zásobové snapshoty) a výrobní kusovníky (`bom_*`). LLM ranking musí dávat přednost tabulkám se stejným dodavatelem nebo komponentou z kusovníku; kandidáti bez vazby (např. HR) dostávají nízké confidence.
+- **Analýza (Tool 2):** Kombinuje fakta (`factv_purchase_order_item`, `factv_inventory_snapshot`) s dimenzemi (`dimv_supplier`, `dimv_component`) a hierarchiemi kusovníku. Výstup identifikuje, které produkty budou ovlivněny a jaké alternativní dodavatelské cesty existují.
+- **Validace (Tool 3):** Kontroluje, že výsledky mají požadovaná metadata (popisy, owner, security classification). Incident drill vyžaduje extra pravidlo: pokud confidence alternativního dodavatele klesne pod 0.6 nebo chybí `ownerInSource`, validátor vystaví varování.
+- **Artefakty:**  
+  - `filtered_dataset.json` obsahuje cross-domain mapping včetně odůvodnění confidence.  
+  - `structure.json` zachycuje, které BOM uzly jsou navázané na jednotlivé dodavatele.  
+  - `quality_report.json` loguje incident-specific varování (např. chybějící schvalovací záznamy).  
+  - `scrum/artifacts/<datum>_incident-drill.json` ukládá auditní trail a slouží QA týmu.
+
+Scénář pomáhá týmu validovat, že MCOP nejen parsuje dokumenty, ale i prakticky podporuje rozhodování během supply-risk incidentů – bez toho, aby se dokumentace stávala čistě „meta“ sama o sobě.
+
 ---
 
 ## 9. Datové toky a formáty
@@ -1128,5 +1144,28 @@ logger.info("Starting MCOP pipeline...")
 ---
 
 **Verze dokumentu:** 1.0.0
-**Poslední aktualizace:** 2 listopad 2025
-**Status:** ✅ MVP Architecture Complete
+**Poslední aktualizace:** 5 listopad 2025
+**Status:** ✅ MVP Architecture Complete – 🔜 Tool 4–6 Planned
+
+---
+
+## 11. Planned Tools (Roadmap Alignment)
+
+Zadání v `docs_langgraph/zadani.md` definuje další tři nástroje, které navazují na MVP a rozšiřují orchestrátor o bezpečnost, vizualizace a skriptování. Níže je plánovaný rozsah:
+
+| Tool | Mandát (podle zadání) | Stav | Roadmapa |
+| ---- | --------------------- | ---- | -------- |
+| **Tool 4 – Security Analyzer** | Skenovat metadata na `securityClassification`, PII tagy a navrhovat RLS | ❌ Planned | Q1 2026 pilot na procurement/logistics schématech. Výstupy budou ukládány do `security_report.json/md` a navázány na Tool 3 findings. |
+| **Tool 5 – ER Diagram Generator** | Generovat Mermaid ER diagram na základě výstupu Tool 2 | ❌ Planned | Q1 2026 implementace deterministického generátoru (`structure.json` → `diagram.md`). Součást governance reportů a workshopových materiálů. |
+| **Tool 6 – Script Generator (RAG-LLM)** | Vytvářet Power Query (M) a SQL skripty využívající business kontext | ❌ Planned | Q2 2026 využití Azure LLM s RAG nad interními šablonami. Priorita: procurement spend assurance + incident drill. Artefakty verzovat v `scrum/artifacts/` s timestampy. |
+
+### 11.1 Integrace do Orchestrátoru
+- **Node 2 rozšíření:** Po Tool 3 přidáme větev pro Tool 4 (deterministický bezpečnostní check). Výstupy (`security_report`) se uloží do stavu `MCOPState`.
+- **Node 4 paralelní generace:** Tool 5 a Tool 6 poběží společně s Tool 7; orchestrátor zaručí sdílený business kontext z Tool 0.
+- **Error handling:** Tool 4–6 využijí stejný `handle_node_error` pattern a budou logovat do `scrum/artifacts/<datum>_error-toolX.json`.
+
+### 11.2 Architektonické závislosti
+- **Data inputs:** Tool 4 vyžaduje enrichované security tagy z Collibry/SAP. Tool 5 potřebuje `structure.json`. Tool 6 vyžaduje přístup k interním šablonám (RAG store) a Azure LLM parametrům.
+- **Governance:** Všechny nové tooly musí logovat běhy s `.isoformat()` timestampy, respektovat scope_out pravidla a začleňovat se do governance reportů stejně jako stávající pipeline.
+
+Tato roadmapa doplňuje MVP o chybějící části ze zadání a dává architektům jasný směr, kdy a jak budou Tool 4–6 doplněny.
