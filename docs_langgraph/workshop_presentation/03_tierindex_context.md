@@ -100,21 +100,21 @@ Risk manager chce proaktivně identifikovat Single Points of Failure – subdoda
 
 **UML Activity Diagram:**
 ```mermaid
-graph TD
-    A[Start: Analyze Tier-2] --> B{For Each Tier-2 Supplier}
-    B --> C[Count Connected Tier-1 Suppliers]
-    B --> D[Count Affected Projects]
-    B --> E[Calculate Total Exposure]
-    C --> F{Evaluate Risk}
+flowchart TD
+    A["Start: Analyze Tier-2"] --> B{"For Each Tier-2 Supplier"}
+    B --> C["Count Connected Tier-1 Suppliers"]
+    B --> D["Count Affected Projects"]
+    B --> E["Calculate Total Exposure"]
+    C --> F{"Evaluate Risk"}
     D --> F
     E --> F
-    F -->|tier1 ≥ HIGH_THRESHOLD AND projects ≥ HIGH_PROJECT_THRESHOLD| G["⚠️ CRITICAL SPOF"]
-    F -->|tier1 ≥ MEDIUM_THRESHOLD| H["⚠️ HIGH SPOF"]
-    F -->|tier1 < MEDIUM_THRESHOLD| I["✓ MONITORED"]
-    G --> J[Sort by Exposure]
+    F -->|"tier1 ≥ HIGH_THRESHOLD AND projects ≥ HIGH_PROJECT_THRESHOLD"| G["⚠️ CRITICAL SPOF"]
+    F -->|"tier1 ≥ MEDIUM_THRESHOLD"| H["⚠️ HIGH SPOF"]
+    F -->|"tier1 < MEDIUM_THRESHOLD"| I["✓ MONITORED"]
+    G --> J["Sort by Exposure"]
     H --> J
     I --> J
-    J --> K[Return Ranked List]
+    J --> K["Return Ranked List"]
 ```
 
 **Pseudo-kód:**

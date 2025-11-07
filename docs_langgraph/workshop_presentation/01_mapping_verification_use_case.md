@@ -139,21 +139,21 @@ Tier-1 Supplier A (závislý na kritickém uzlu)
 
 **UML Activity Diagram:**
 ```mermaid
-graph TD
-    A[Start: Analyze Tier-2] --> B[Count Tier-1 Dependencies]
-    B --> C[Count Affected Projects]
-    C --> D[Calculate Volume at Risk]
-    D --> E{Evaluate Severity}
-    E -->|tier1 ≥ 5 AND projects ≥ 8| F[CRITICAL SPOF]
-    E -->|tier1 ≥ 3 AND projects ≥ 5| G[HIGH SPOF]
-    E -->|tier1 ≥ 2| H[MEDIUM SPOF]
-    E -->|tier1 < 2| I[LOW RISK]
-    F --> J[Calculate SPOF Score]
+flowchart TD
+    A["Start: Analyze Tier-2"] --> B["Count Tier-1 Dependencies"]
+    B --> C["Count Affected Projects"]
+    C --> D["Calculate Volume at Risk"]
+    D --> E{"Evaluate Severity"}
+    E -->|"tier1 ≥ 5 AND projects ≥ 8"| F["CRITICAL SPOF"]
+    E -->|"tier1 ≥ 3 AND projects ≥ 5"| G["HIGH SPOF"]
+    E -->|"tier1 ≥ 2"| H["MEDIUM SPOF"]
+    E -->|"tier1 < 2"| I["LOW RISK"]
+    F --> J["Calculate SPOF Score"]
     G --> J
     H --> J
-    J --> K{Score > 50?}
-    K -->|Yes| L[Flag for Action]
-    K -->|No| M[Monitor Only]
+    J --> K{"Score > 50?"}
+    K -->|"Yes"| L["Flag for Action"]
+    K -->|"No"| M["Monitor Only"]
 ```
 
 **How we implement it (shrnutí):**

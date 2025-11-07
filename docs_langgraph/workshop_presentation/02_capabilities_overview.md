@@ -11,12 +11,12 @@
 ### Architektonická progrese
 
 ```mermaid
-graph LR
-    A[TierIndex<br/>FOUNDATION] -->|poskytuje data| B[MCOP<br/>ORCHESTRATOR]
-    B -->|enrichuje metadata| C[ML Monitoring<br/>FUTURE VISION]
+flowchart LR
+    A["TierIndex<br/>FOUNDATION"] -->|"poskytuje data"| B["MCOP<br/>ORCHESTRATOR"]
+    B -->|"enrichuje metadata"| C["ML Monitoring<br/>FUTURE VISION"]
 
-    A -.->|4 capabilities<br/>rule-based| D[Business Value<br/>dnes]
-    C -.->|predikce<br/>proaktivní alerty| E[Business Value<br/>budoucnost]
+    A -.->|"4 capabilities<br/>rule-based"| D["Business Value<br/>dnes"]
+    C -.->|"predikce<br/>proaktivní alerty"| E["Business Value<br/>budoucnost"]
 
     style A fill:#e1f5e1
     style B fill:#e1e5f5
@@ -39,17 +39,17 @@ graph LR
 TierIndex data platform umožňuje 4 hlavní business capabilities pro procurement intelligence:
 
 ```mermaid
-graph TB
-    TI[TierIndex Data Platform<br/>HS, WGR, BOM, Tier Mappings]
+flowchart TB
+    TI["TierIndex Data Platform<br/>HS, WGR, BOM, Tier Mappings"]
 
-    TI --> MAP[1. Mapping & Verification<br/>N-Tier Visibility]
-    TI --> CRISIS[2. Crisis Impact Analysis<br/>Real-time Response]
-    TI --> SPOF[3. SPOF Detection<br/>Risk Identification]
-    TI --> EARLY[4. Early Warning<br/>Predictive Monitoring]
+    TI --> MAP["1. Mapping & Verification<br/>N-Tier Visibility"]
+    TI --> CRISIS["2. Crisis Impact Analysis<br/>Real-time Response"]
+    TI --> SPOF["3. SPOF Detection<br/>Risk Identification"]
+    TI --> EARLY["4. Early Warning<br/>Predictive Monitoring"]
 
-    MAP -.->|Foundation for| CRISIS
-    MAP -.->|Enables| SPOF
-    SPOF -.->|Feeds| EARLY
+    MAP -.->|"Foundation for"| CRISIS
+    MAP -.->|"Enables"| SPOF
+    SPOF -.->|"Feeds"| EARLY
 
     style TI fill:#e1f5e1
     style EARLY fill:#ffe1e1

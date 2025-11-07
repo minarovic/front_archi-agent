@@ -48,21 +48,21 @@ TierIndex přístup:
 
 ### **Architecture Pattern:**
 ```mermaid
-graph LR
+flowchart LR
     subgraph "External Bronze (DAP)"
-        SB[Sayari Bronze<br/>Bulk Data]
-        DB[DnB Bronze<br/>~500 GB]
-        SAPB[SAP Bronze<br/>dm_ba/bs_purchase]
+        SB["Sayari Bronze<br/>Bulk Data"]
+        DB["DnB Bronze<br/>~500 GB"]
+        SAPB["SAP Bronze<br/>dm_ba/bs_purchase"]
     end
 
     subgraph "TierIndex Ownership"
-        SILVER[Silver Layer<br/>ti_entity, ti_edge]
-        GOLD[Gold Layer<br/>ti_spof_scores]
+        SILVER["Silver Layer<br/>ti_entity, ti_edge"]
+        GOLD["Gold Layer<br/>ti_spof_scores"]
     end
 
-    SB -->|Read-only| SILVER
-    DB -->|Read-only| SILVER
-    SAPB -->|Read-only| SILVER
+    SB -->|"Read-only"| SILVER
+    DB -->|"Read-only"| SILVER
+    SAPB -->|"Read-only"| SILVER
     SILVER --> GOLD
 
     style SILVER fill:#e1f5e1
@@ -271,21 +271,21 @@ Different users → Different needs:
 ### **Architecture:**
 
 ```mermaid
-graph TB
+flowchart TB
     subgraph "TierIndex Gold Layer"
-        GOLD[(Gold Tables)]
+        GOLD[("Gold Tables")]
     end
 
     subgraph "Consumption Layer"
-        SQL[Direct SQL Access<br/>DAP Notebooks]
-        API[REST API<br/>FastAPI + Serverless]
-        PBI[Power BI<br/>Dashboards]
+        SQL["Direct SQL Access<br/>DAP Notebooks"]
+        API["REST API<br/>FastAPI + Serverless"]
+        PBI["Power BI<br/>Dashboards"]
     end
 
     subgraph "Users"
-        ANALYST[Data Analysts]
-        APP[MCOP Agent<br/>Orchestrator]
-        BIZ[Business Users<br/>Procurement, Risk]
+        ANALYST["Data Analysts"]
+        APP["MCOP Agent<br/>Orchestrator"]
+        BIZ["Business Users<br/>Procurement, Risk"]
     end
 
     GOLD --> SQL

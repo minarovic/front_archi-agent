@@ -133,23 +133,23 @@ Model Scenario: Critical Infrastructure Disruption
 
 ### **Diagram:**
 ```mermaid
-graph LR
+flowchart LR
     subgraph "Bronze (Reference)"
-        SB[Sayari<br/>Bulk Data]
-        DB[DnB]
-        SAPB[DAP (SAP)<br/>dm_bs]
+        SB["Sayari<br/>Bulk Data"]
+        DB["DnB"]
+        SAPB["DAP (SAP)<br/>dm_bs"]
     end
 
     subgraph "Silver (TierIndex Owned)"
-        ENT[ti_entity<br/>20k suppliers]
-        EDGE[ti_edge<br/>200k relationships]
-        RISK[ti_entity_risk<br/>Risk attributes]
+        ENT["ti_entity<br/>20k suppliers"]
+        EDGE["ti_edge<br/>200k relationships"]
+        RISK["ti_entity_risk<br/>Risk attributes"]
     end
 
     subgraph "Gold (Pre-calculated)"
-        SPOF[ti_spof_scores]
-        GEO[ti_geographic_clusters]
-        COMM[ti_commodity_exposure]
+        SPOF["ti_spof_scores"]
+        GEO["ti_geographic_clusters"]
+        COMM["ti_commodity_exposure"]
     end
 
     SB --> ENT
