@@ -1,0 +1,147 @@
+{
+	"openapi": "3.0.0",
+	"info": {
+		"title": "Authentication V3",
+		"description": "Provides the access token that allow you to use the D&B Direct+ APIs.",
+		"version": "v3"
+	},
+	"servers": [
+		{
+			"url": "https://plus.dnb.com",
+			"description": "Production endpoint"
+		}
+	],
+	"paths": {
+		"/v3/token": {
+			"description": "Provides the access token that allow you to use the D&B Direct+ APIs.",
+			"x-DNB-ID": "authenticationV3",
+			"x-DNB-Name": "Authentication V3 ",
+			"post": {
+				"description": "Provides the access token that allow you to use the D&B Direct+ APIs.",
+				"summary": "Authentication V3",
+				"operationId": "authenticationV3",
+				"x-monitoring": "Not Available.",
+				"x-monitoring-pdf": "Not Available.",
+				"parameters": [
+					{
+						"name": "Content-Type",
+						"in": "header",
+						"required": true,
+						"description": "The content type must be \"application/x-www-form-urlencoded\".",
+						"example": "application/x-www-form-urlencoded",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/x-www-form-urlencoded": {
+							"schema": {
+								"type": "object",
+								"additionalProperties": true,
+								"properties": {
+									"grant_type": {
+										"type": "string",
+										"nullable": true,
+										"example": "client_credentials",
+										"description": "grant type"
+									},
+									"scope": {
+										"type": "string",
+										"nullable": true,
+										"example": "read,write",
+										"description": "The scope of the access request."
+									}
+								},
+								"required": [
+									"grant_type"
+								]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Success",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"additionalProperties": true,
+									"properties": {
+										"access_token": {
+											"type": "string",
+											"nullable": true,
+											"example": "s",
+											"description": "A value that allows access to the APIs. This must be included in each API request."
+										},
+										"token_type": {
+											"type": "string",
+											"nullable": true,
+											"example": "Bearer",
+											"description": "Type of the token."
+										},
+										"expires_in": {
+											"type": "integer",
+											"nullable": true,
+											"example": 86400,
+											"description": "Indicates, in number of seconds, when the token expires."
+										}
+									},
+									"required": [
+										"access_token",
+										"token_type",
+										"expires_in"
+									]
+								}
+							}
+						}
+					},
+					"default": {
+						"description": "Error",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"additionalProperties": true,
+									"properties": {
+										"error": {
+											"type": "string",
+											"nullable": true,
+											"example": "invalid_request",
+											"description": "Records the failures resulted out of this transaction. This section is created only when the customer request was not fulfilled due to system failures, incorrect or incomplete request parameters etc.,"
+										},
+										"error_description": {
+											"type": "string",
+											"nullable": true,
+											"example": "error desc",
+											"description": "An explanatory text providing more details about the reason for failure of this request parameter."
+										}
+									},
+									"required": [
+										"error",
+										"error_description"
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"basicAuth": {
+				"type": "http",
+				"scheme": "basic"
+			}
+		}
+	},
+	"security": [
+		{
+			"basicAuth": []
+		}
+	]
+}
