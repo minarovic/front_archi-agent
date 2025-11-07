@@ -34,17 +34,21 @@ Nové EU regulace zakazují import určitých dílů klasifikovaných pod HS cod
 - Neúplná data (dodavatelé nereagují)
 
 **S TierIndex:**
-```sql
--- Jednoduchý dotaz: Kteří dodavatelé obchodují s HS 8708.29 z Ruska?
-SELECT
-    supplier_name,
-    country,
-    hs_code,
-    annual_volume_eur
-FROM tierindex.ti_entity_trade
-WHERE hs_code = '8708.29'
-  AND origin_country = 'RU'
-  AND tier_level IN (1, 2);
+```pseudo
+FUNCTION find_suppliers_by_hs_code(hs_code, origin_country, tier_levels)
+  QUERY TierIndex.EntityTrade
+    FILTER BY hs_code = input_hs_code
+    FILTER BY origin_country = input_country
+    FILTER BY tier_level IN input_tiers
+  RETURN supplier_name, country, annual_volume
+END FUNCTION
+
+// Použití:
+results = find_suppliers_by_hs_code(
+  hs_code: "8708.29",
+  origin_country: "RU",
+  tier_levels: [1, 2]
+)
 ```
 
 **Output:**
@@ -76,18 +80,26 @@ Dodavatel `ElectroComponents GmbH` právě vyhlásil bankrot. Musíme okamžitě
 - Mezitím produkce může stát
 
 **S TierIndex:**
-```sql
--- Které projekty používají díly od ElectroComponents?
-SELECT
-    p.project_name,
-    p.production_phase,
-    COUNT(DISTINCT b.part_number) as affected_parts,
-    SUM(b.monthly_volume) as parts_at_risk
-FROM tierindex.ti_bom b
-JOIN tierindex.ti_projects p ON b.project_id = p.project_id
-WHERE b.supplier_id = 'SUP-04521'  -- ElectroComponents
-  AND p.production_phase IN ('SERIAL', 'RAMP_UP')
-GROUP BY p.project_name, p.production_phase;
+```pseudo
+FUNCTION analyze_supplier_impact(supplier_id, active_phases)
+  FOR EACH project IN TierIndex.Projects
+    IF project.production_phase IN active_phases THEN
+      affected_parts = COUNT(BOM.parts WHERE supplier = supplier_id)
+      monthly_volume = SUM(BOM.monthly_volume WHERE supplier = supplier_id)
+
+      IF affected_parts > 0 THEN
+        COLLECT: project_name, phase, affected_parts, monthly_volume
+      END IF
+    END IF
+  END FOR
+  RETURN results
+END FUNCTION
+
+// Použití:
+impact = analyze_supplier_impact(
+  supplier_id: "SUP-04521",  // ElectroComponents
+  active_phases: ["SERIAL", "RAMP_UP"]
+)
 ```
 
 **Output:**
@@ -118,30 +130,49 @@ Risk manager chce proaktivně identifikovat Single Points of Failure – subdoda
 - Discover SPOF až když nastane krize
 
 **S TierIndex:**
-```sql
--- Identifikuj Tier-2 subdodavatele s vysokou centralitou
-WITH tier2_dependencies AS (
-    SELECT
-        t2.supplier_id,
-        t2.supplier_name,
-        COUNT(DISTINCT t1.supplier_id) as tier1_count,
-        COUNT(DISTINCT p.project_id) as project_count,
-        SUM(t1.annual_volume_eur) as total_exposure
-    FROM tierindex.ti_tier2 t2
-    JOIN tierindex.ti_tier1_tier2_rel r ON t2.supplier_id = r.tier2_id
-    JOIN tierindex.ti_tier1 t1 ON r.tier1_id = t1.supplier_id
-    JOIN tierindex.ti_projects p ON t1.supplier_id = p.supplier_id
-    GROUP BY t2.supplier_id, t2.supplier_name
-)
-SELECT *,
-    CASE
-        WHEN tier1_count >= 5 AND project_count >= 8 THEN 'CRITICAL_SPOF'
-        WHEN tier1_count >= 3 THEN 'HIGH_SPOF'
-        ELSE 'MEDIUM_SPOF'
-    END as spof_severity
-FROM tier2_dependencies
-WHERE tier1_count >= 3
-ORDER BY total_exposure DESC;
+
+**UML Activity Diagram:**
+```mermaid
+graph TD
+    A[Start: Analyze Tier-2] --> B{For Each Tier-2 Supplier}
+    B --> C[Count Connected Tier-1 Suppliers]
+    B --> D[Count Affected Projects]
+    B --> E[Calculate Total Exposure]
+    C --> F{Evaluate Risk}
+    D --> F
+    E --> F
+    F -->|tier1 ≥ 5 AND projects ≥ 8| G["⚠️ CRITICAL SPOF"]
+    F -->|tier1 ≥ 3| H["⚠️ HIGH SPOF"]
+    F -->|tier1 < 3| I["✓ MONITORED"]
+    G --> J[Sort by Exposure]
+    H --> J
+    I --> J
+    J --> K[Return Ranked List]
+```
+
+**Pseudo-kód:**
+```pseudo
+FUNCTION detect_spof_in_tier2()
+  FOR EACH tier2_supplier IN TierIndex.Tier2
+    tier1_count = COUNT(connected Tier-1 suppliers)
+    project_count = COUNT(affected projects via Tier-1)
+    total_exposure = SUM(annual volumes from Tier-1)
+
+    IF tier1_count >= 5 AND project_count >= 8 THEN
+      risk_level = "CRITICAL_SPOF"
+    ELSE IF tier1_count >= 3 THEN
+      risk_level = "HIGH_SPOF"
+    ELSE
+      risk_level = "MONITORED"
+    END IF
+
+    IF tier1_count >= 3 THEN
+      COLLECT: supplier_id, name, risk_level, tier1_count, project_count, exposure
+    END IF
+  END FOR
+  SORT BY total_exposure DESC
+  RETURN results
+END FUNCTION
 ```
 
 **Output:**
@@ -172,34 +203,43 @@ Strategický procurement plánuje diverzifikaci. Chce vědět, které commodity 
 - Týdny práce
 
 **S TierIndex:**
-```sql
--- Vypočítej geografickou koncentraci pro každou WGR commodity group
-WITH geo_risk AS (
-    SELECT
-        wgr.commodity_group,
-        t1.country,
-        COUNT(DISTINCT t1.supplier_id) as supplier_count,
-        SUM(t1.annual_volume_eur) as total_spend,
-        -- Označení high-risk countries
-        CASE
-            WHEN t1.country IN ('RU', 'BY', 'UA', 'CN') THEN 'HIGH_RISK'
-            WHEN t1.country IN ('TR', 'IN', 'TH') THEN 'MEDIUM_RISK'
-            ELSE 'LOW_RISK'
-        END as country_risk
-    FROM tierindex.ti_tier1 t1
-    JOIN tierindex.ti_wgr_mapping wgr ON t1.supplier_id = wgr.supplier_id
-    GROUP BY wgr.commodity_group, t1.country
-)
-SELECT
-    commodity_group,
-    country,
-    supplier_count,
-    total_spend,
-    country_risk,
-    ROUND(100.0 * total_spend / SUM(total_spend) OVER (PARTITION BY commodity_group), 1) as spend_share_pct
-FROM geo_risk
-WHERE country_risk IN ('HIGH_RISK', 'MEDIUM_RISK')
-ORDER BY commodity_group, total_spend DESC;
+
+**Pseudo-kód:**
+```pseudo
+FUNCTION analyze_geographic_clustering_risk()
+  // Definice rizikových regionů
+  HIGH_RISK_COUNTRIES = ["RU", "BY", "UA", "CN"]
+  MEDIUM_RISK_COUNTRIES = ["TR", "IN", "TH"]
+
+  FOR EACH commodity_group IN TierIndex.WGR_CommodityGroups
+    FOR EACH supplier IN commodity_group.suppliers
+      country = supplier.country
+      spend = supplier.annual_volume
+
+      // Klasifikace rizika
+      IF country IN HIGH_RISK_COUNTRIES THEN
+        risk_level = "HIGH_RISK"
+      ELSE IF country IN MEDIUM_RISK_COUNTRIES THEN
+        risk_level = "MEDIUM_RISK"
+      ELSE
+        risk_level = "LOW_RISK"
+      END IF
+
+      // Agregace po commodity group + country
+      AGGREGATE: commodity_group, country, supplier_count, total_spend, risk_level
+    END FOR
+
+    // Výpočet koncentrace
+    FOR EACH country IN commodity_group.countries
+      spend_share_pct = (country.spend / commodity_group.total_spend) * 100
+      COLLECT: commodity_group, country, supplier_count, spend, risk_level, spend_share_pct
+    END FOR
+  END FOR
+
+  FILTER BY risk_level IN ["HIGH_RISK", "MEDIUM_RISK"]
+  SORT BY commodity_group, total_spend DESC
+  RETURN results
+END FUNCTION
 ```
 
 **Output:**
@@ -321,7 +361,7 @@ Vehicle Model: Octavia EV
 - `/v1/supply_chain/upstream` - Tier-2/3 traversal
 - `/v1/trade/search/suppliers` - Find suppliers by HS code
 
-**Update frequency:** Denní polling (Notifications API) + měsíční baseline (Bulk Data 3.22 TiB)
+**Update frequency:** Denní polling (Notifications API) + měsíční baseline (Bulk Data)
 
 **Příklad použití:**
 > "Chci vědět, kdo jsou sub-dodavatelé ElectroComponents"

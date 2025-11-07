@@ -50,7 +50,7 @@ TierIndex přístup:
 ```mermaid
 graph LR
     subgraph "External Bronze (DAP)"
-        SB[Sayari Bronze<br/>3.22 TiB]
+        SB[Sayari Bronze<br/>Bulk Data]
         DB[DnB Bronze<br/>~500 GB]
         SAPB[SAP Bronze<br/>dm_ba/bs_purchase]
     end
@@ -98,7 +98,7 @@ graph LR
 #### **Why Monthly Baseline?**
 ```
 Sayari Bulk Data update frequency: Monthly
-  → 3.22 TiB new snapshot každý měsíc
+  → New snapshot každý měsíc
   → Delta exports NOT available (Sayari confirmed)
 
 Options considered:
@@ -126,14 +126,14 @@ Sources for deltas:
 TierIndex Update Cadence:
 
 Month 1:
-  Day 1:  Full baseline refresh (3.22 TiB)
+  Day 1:  Full baseline refresh
   Day 2:  Delta update (Sayari Notifications)
   Day 3:  Delta update
   ...
   Day 30: Delta update
 
 Month 2:
-  Day 1:  New baseline (3.22 TiB) → replaces Month 1
+  Day 1:  New baseline → replaces Month 1
   Day 2:  Delta update
   ...
 ```
@@ -184,7 +184,7 @@ Month 2:
   ✅ Compute + storage integrated
 
 Alternative considered:
-  ❌ Azure SQL - not designed for 3.22 TiB analytical workloads
+  ❌ Azure SQL - not designed for large-scale analytical workloads
   ❌ Neo4j - great for graphs, but not primary storage for ETL
   ❌ Synapse - DAP prefers Databricks
 ```
@@ -225,22 +225,17 @@ catalog: staging_wsp (TierIndex workspace)
 
 ### **Partitioning Strategy:**
 
-```sql
--- ti_entity: Partition by country (for geographic queries)
-CREATE TABLE tierindex_silver.ti_entity (
-    supplier_id STRING,
-    duns STRING,
-    country STRING,
-    ...
-) PARTITIONED BY (country);
+```pseudo
+// ti_entity: Partition by country (for geographic queries)
+CREATE TABLE ti_entity (
+    supplier_id, duns, country, ...
+) PARTITIONED BY (country)
 
--- ti_edge: Partition by tier_level (for N-tier traversal)
-CREATE TABLE tierindex_silver.ti_edge (
-    source_id STRING,
-    target_id STRING,
-    tier_level INT,  -- 1=Tier1→Tier2, 2=Tier2→Tier3
-    ...
-) PARTITIONED BY (tier_level);
+// ti_edge: Partition by tier_level (for N-tier traversal)
+CREATE TABLE ti_edge (
+    source_id, target_id, tier_level, ...
+    // tier_level: 1=Tier1→Tier2, 2=Tier2→Tier3
+) PARTITIONED BY (tier_level)
 ```
 
 ### **Implications:**
@@ -307,20 +302,15 @@ graph TB
 ### **Access Pattern Details:**
 
 #### **Pattern 1: Direct SQL (Analysts)**
-```python
-# Databricks notebook
-from pyspark.sql import SparkSession
-
-spark = SparkSession.builder.getOrCreate()
-
-df = spark.sql("""
-    SELECT supplier_name, spof_score, tier1_dependent_count
-    FROM staging_wsp.tierindex_gold.ti_spof_scores
-    WHERE spof_score > 70
-    ORDER BY spof_score DESC
-""")
-
-df.show()
+```pseudo
+// Databricks notebook přístup
+CONNECT TO TierIndex.Gold
+QUERY:
+  SELECT supplier_name, spof_score, tier1_dependent_count
+  FROM ti_spof_scores
+  WHERE spof_score > 70
+  ORDER BY spof_score DESC
+DISPLAY results
 ```
 
 **Use cases:** Ad-hoc analytics, data exploration, debugging
@@ -328,26 +318,21 @@ df.show()
 ---
 
 #### **Pattern 2: REST API (Applications)**
-```python
-# FastAPI endpoint (Azure Functions)
-from fastapi import FastAPI
-from databricks import sql
+```pseudo
+// FastAPI endpoint (Azure Functions)
+ENDPOINT: GET /api/v1/suppliers/{supplier_id}/risk
 
-app = FastAPI()
+FUNCTION get_supplier_risk(supplier_id):
+  CONNECT TO TierIndex.Gold
 
-@app.get("/api/v1/suppliers/{supplier_id}/risk")
-async def get_supplier_risk(supplier_id: str):
-    with sql.connect(
-        server_hostname=os.getenv("DATABRICKS_HOST"),
-        http_path=os.getenv("DATABRICKS_HTTP_PATH")
-    ) as connection:
-        with connection.cursor() as cursor:
-            cursor.execute(f"""
-                SELECT * FROM tierindex_gold.ti_spof_scores
-                WHERE supplier_id = '{supplier_id}'
-            """)
-            result = cursor.fetchone()
-            return {"supplier_id": supplier_id, "risk": result}
+  QUERY:
+    SELECT * FROM ti_spof_scores
+    WHERE supplier_id = {supplier_id}
+
+  result = FETCH_ONE()
+  RETURN JSON: {supplier_id, risk_score, tier1_count, exposure}
+END FUNCTION
+```
 ```
 
 **Use cases:** MCOP orchestration, alert pipelines, integrations
@@ -424,18 +409,17 @@ staging_wsp.tierindex_silver.ti_entity:
 
 ### **Access Control Example:**
 
-```sql
--- Grant read access to procurement team
-GRANT SELECT ON TABLE staging_wsp.tierindex_gold.ti_spof_scores
-TO `procurement-readers`;
+```pseudo
+// Unity Catalog RBAC struktura
 
--- Grant admin access to TierIndex team
-GRANT ALL PRIVILEGES ON SCHEMA staging_wsp.tierindex_silver
-TO `tierindex-admins`;
+// Grant read access to procurement team
+GRANT SELECT ON ti_spof_scores TO "procurement-readers"
 
--- Deny direct Bronze access (use references only)
-REVOKE ALL PRIVILEGES ON SCHEMA staging_wsp.tierindex_bronze
-FROM `all-users`;
+// Grant admin access to TierIndex team
+GRANT ALL_PRIVILEGES ON tierindex_silver TO "tierindex-admins"
+
+// Deny direct Bronze access (use references only)
+REVOKE ALL_PRIVILEGES ON tierindex_bronze FROM "all-users"
 ```
 
 ### **Implications:**
@@ -499,7 +483,7 @@ Všechna rozhodnutí align s DAP standardy → rychlejší approval
    - Jen Gold pro business users, nebo i Silver pro analysts?
 
 4. **Cost optimization:**
-   - 3.22 TiB baseline refresh měsíčně → jak estimovat compute costs?
+   - Měsíční baseline refresh → jak estimovat compute costs?
    - Partition pruning strategy pro common queries?
 
 5. **Future evolution:**

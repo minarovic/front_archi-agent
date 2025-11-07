@@ -105,7 +105,7 @@ Hamburg Port Blockage Example:
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  Sayari (Supply Chain Relationships)                    │
-│  • 3.22 TiB Bulk Data (monthly)                         │
+│  • Bulk Data (monthly)                                 │
 │  • Notifications API (daily deltas)                     │
 │  • Use: Tier-2/3 mapping, sanctions, UBO               │
 └─────────────────────────────────────────────────────────┘
@@ -136,7 +136,7 @@ Hamburg Port Blockage Example:
 ```mermaid
 graph LR
     subgraph "Bronze (Reference)"
-        SB[Sayari<br/>3.22 TiB]
+        SB[Sayari<br/>Bulk Data]
         DB[DnB<br/>~500 GB]
         SAPB[SAP DAP<br/>dm_bs]
     end
@@ -409,22 +409,24 @@ Phase 3: ML Monitoring
 ### **3 Roles:**
 
 #### **1. Data Orchestrator**
-```python
-# MCOP coordinates multi-source queries
-async def analyze_hamburg_impact():
-    # Step 1: TierIndex
-    affected_tier1 = await tierindex.query(
-        "SELECT * FROM ti_entity WHERE import_port = 'DEHAM'"
-    )
+```pseudo
+// MCOP coordinates multi-source queries
+ASYNC FUNCTION analyze_hamburg_impact():
+    // Step 1: TierIndex - najdi dotčené Tier-1
+    affected_tier1 = QUERY TierIndex.Entities
+                     WHERE import_port = "DEHAM"
 
-    # Step 2: Collibra
-    data_quality = await collibra.get_quality_scores(affected_tier1)
+    // Step 2: Collibra - získej data quality scores
+    data_quality = QUERY Collibra.QualityScores
+                   FOR affected_tier1
 
-    # Step 3: Unity Catalog
-    hs_codes = await unity_catalog.get_lineage(affected_tier1)
+    // Step 3: Unity Catalog - získej lineage
+    hs_codes = QUERY UnityCatalog.Lineage
+               FOR affected_tier1
 
-    # Step 4: Synthesize
-    return create_risk_report(affected_tier1, data_quality, hs_codes)
+    // Step 4: Syntetizuj report
+    RETURN create_risk_report(affected_tier1, data_quality, hs_codes)
+END FUNCTION
 ```
 
 #### **2. Metadata Enricher**
@@ -459,7 +461,7 @@ async def analyze_hamburg_impact():
    - 🤔 Jen Gold pro business users, nebo i Silver pro analysts?
 
 4. **Cost Estimation:**
-   - 🤔 3.22 TiB měsíčně → jak estimovat Databricks compute?
+   - 🤔 Měsíční Bulk Data refresh → jak estimovat Databricks compute?
    - 🤔 Partition pruning strategy?
 
 5. **Scalability:**
@@ -541,7 +543,7 @@ A: Power BI zobrazí data, ale neumí:
 
 **Q: "Jak často se data refreshují?"**
 A: Hybrid:
-- Baseline: Měsíčně (3.22 TiB Sayari Bulk)
+- Baseline: Měsíčně (Sayari Bulk)
 - Deltas: Denně (Notifications API)
 - Gold: Týdně (pre-calculated metrics)
 

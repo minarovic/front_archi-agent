@@ -59,24 +59,29 @@ Náš systém staví na **TierIndex** - unifikované datové platformě pro proc
 
 #### Step 1: Identifikace ovlivněných Tier-1 dodavatelů
 
-**TierIndex Query:**
-```sql
--- Azure SQL Database: Identifikuj Tier-1 s Hamburg jako hlavním importním portem
-SELECT
-    t1.supplier_id,
-    t1.supplier_name,
-    t1.annual_volume_eur,
-    t1.primary_import_port,
-    COUNT(DISTINCT p.project_id) as affected_projects,
-    SUM(p.annual_parts_volume) as total_parts_at_risk
-FROM tier1_suppliers t1
-JOIN supplier_projects sp ON t1.supplier_id = sp.supplier_id
-JOIN projects p ON sp.project_id = p.project_id
-WHERE t1.primary_import_port = 'DEHAM'  -- Hamburg port code
-  AND t1.status = 'ACTIVE'
-  AND p.production_phase IN ('SERIAL', 'RAMP_UP')
-GROUP BY t1.supplier_id, t1.supplier_name, t1.annual_volume_eur, t1.primary_import_port
-ORDER BY total_parts_at_risk DESC;
+**TierIndex Query (pseudo-kód):**
+```pseudo
+FUNCTION find_affected_tier1_by_port(port_code, statuses, phases)
+  QUERY TierIndex.Tier1Suppliers
+    FILTER BY primary_import_port = port_code
+    FILTER BY status IN statuses
+    JOIN Projects ON supplier_id
+    FILTER BY production_phase IN phases
+
+  AGGREGATE:
+    - COUNT(DISTINCT projects)
+    - SUM(annual_parts_volume) as total_parts_at_risk
+
+  SORT BY total_parts_at_risk DESC
+  RETURN results
+END FUNCTION
+
+// Použití:
+affected = find_affected_tier1_by_port(
+  port_code: "DEHAM",  // Hamburg
+  statuses: ["ACTIVE"],
+  phases: ["SERIAL", "RAMP_UP"]
+)
 ```
 
 **Real Data Results:**
@@ -92,42 +97,33 @@ ORDER BY total_parts_at_risk DESC;
 
 #### Step 2: Mapování Tier-2/3 subdodavatelů (N-Tier Traversal)
 
-**MCOP Orchestration Flow:**
+**MCOP Orchestration Flow (pseudo-kód):**
 
-```python
-# Pseudo-kód: MCOP agent orchestruje propojení TierIndex → Sayari → Unity Catalog
-async def map_ntier_supply_chain(tier1_supplier_id: str, depth: int = 3):
-    """
-    MCOP Agent: Orchestruje N-tier mapování s metadata enrichment
-    """
-    # 1. TierIndex: Získej Tier-1 základní data
-    tier1_data = await azure_sql.query(
-        "SELECT * FROM tier1_suppliers WHERE supplier_id = ?",
-        [tier1_supplier_id]
+```pseudo
+ASYNC FUNCTION map_ntier_supply_chain(tier1_supplier_id, depth = 3)
+  // 1. TierIndex: Získej Tier-1 základní data
+  tier1_data = QUERY TierIndex.Tier1Suppliers
+               WHERE supplier_id = tier1_supplier_id
+
+  // 2. Sayari API: Mapuj upstream suppliers (Tier-2/3)
+  sayari_network = CALL SayariAPI.get_supply_chain_upstream(
+    entity_id: tier1_data.sayari_entity_id,
+    depth: depth,
+    relationship_types: ["SUPPLIER", "MANUFACTURER"]
+  )
+
+  // 3. Unity Catalog: Enrich s business metadata
+  enriched_network = []
+  FOR EACH node IN sayari_network.nodes
+    // Lookup HS codes pro subdodavatele
+    hs_codes = QUERY UnityCatalog.TradeData.SupplierHSMappings
+               WHERE duns_number = node.duns
+
+    // 4. Collibra: Získej data quality score
+    collibra_meta = CALL CollibraAPI.get_asset_metadata(
+      asset_type: "Supplier",
+      external_id: node.duns
     )
-
-    # 2. Sayari API: Mapuj upstream suppliers (Tier-2/3)
-    sayari_network = await sayari_client.get_supply_chain_upstream(
-        entity_id=tier1_data['sayari_entity_id'],
-        depth=depth,
-        relationship_types=['SUPPLIER', 'MANUFACTURER']
-    )
-
-    # 3. Unity Catalog: Enrich s business metadata
-    enriched_network = []
-    for node in sayari_network['nodes']:
-        # Lookup HS codes pro subdodavatele
-        hs_codes = await unity_catalog.query(
-            catalog="tierindex_bronze",
-            schema="trade_data",
-            table="supplier_hs_mappings",
-            filter=f"duns_number = '{node['duns']}'"
-        )
-
-        # Collibra: Získej data quality score a ownership info
-        collibra_meta = await collibra_client.get_asset_metadata(
-            asset_type="Supplier",
-            external_id=node['duns']
         )
 
         enriched_network.append({
@@ -193,40 +189,54 @@ ElectroComponents GmbH (Tier-1)
 
 ##### **3A. Single Point of Failure (SPOF) Detection**
 
-```sql
--- Azure SQL: Network centrality pro SPOF detection
-WITH supplier_dependencies AS (
-    -- Kolik Tier-1 dodavatelů závisí na každém Tier-2
-    SELECT
-        t2.supplier_id as tier2_id,
-        t2.supplier_name,
-        COUNT(DISTINCT t1.supplier_id) as tier1_dependent_count,
-        SUM(t1.annual_volume_eur) as total_volume_at_risk,
-        COUNT(DISTINCT p.project_id) as affected_project_count
-    FROM tier2_suppliers t2
-    JOIN tier1_tier2_relationships r ON t2.supplier_id = r.tier2_id
-    JOIN tier1_suppliers t1 ON r.tier1_id = t1.supplier_id
-    JOIN supplier_projects sp ON t1.supplier_id = sp.supplier_id
-    JOIN projects p ON sp.project_id = p.project_id
-    WHERE p.production_phase IN ('SERIAL', 'RAMP_UP')
-    GROUP BY t2.supplier_id, t2.supplier_name
-),
-spof_scores AS (
-    -- Vypočítej SPOF score (0-100)
-    SELECT
-        *,
-        CASE
-            WHEN tier1_dependent_count >= 5 AND affected_project_count >= 8 THEN 'CRITICAL'
-            WHEN tier1_dependent_count >= 3 AND affected_project_count >= 5 THEN 'HIGH'
-            WHEN tier1_dependent_count >= 2 THEN 'MEDIUM'
-            ELSE 'LOW'
-        END as spof_severity,
-        (tier1_dependent_count * 20.0 + affected_project_count * 10.0) as spof_score
-    FROM supplier_dependencies
-)
-SELECT * FROM spof_scores
-WHERE spof_score > 50  -- Threshold pro HIGH/CRITICAL SPOF
-ORDER BY spof_score DESC;
+**UML Activity Diagram:**
+```mermaid
+graph TD
+    A[Start: Analyze Tier-2] --> B[Count Tier-1 Dependencies]
+    B --> C[Count Affected Projects]
+    C --> D[Calculate Volume at Risk]
+    D --> E{Evaluate Severity}
+    E -->|tier1 ≥ 5 AND projects ≥ 8| F[CRITICAL SPOF]
+    E -->|tier1 ≥ 3 AND projects ≥ 5| G[HIGH SPOF]
+    E -->|tier1 ≥ 2| H[MEDIUM SPOF]
+    E -->|tier1 < 2| I[LOW RISK]
+    F --> J[Calculate SPOF Score]
+    G --> J
+    H --> J
+    J --> K{Score > 50?}
+    K -->|Yes| L[Flag for Action]
+    K -->|No| M[Monitor Only]
+```
+
+**Pseudo-kód:**
+```pseudo
+FUNCTION detect_spof_tier2()
+  FOR EACH tier2_supplier IN TierIndex.Tier2
+    tier1_count = COUNT(connected Tier-1 suppliers)
+    project_count = COUNT(affected projects via Tier-1)
+    volume_at_risk = SUM(annual volumes from Tier-1)
+
+    // Severity classification
+    IF tier1_count >= 5 AND project_count >= 8 THEN
+      severity = "CRITICAL"
+    ELSE IF tier1_count >= 3 AND project_count >= 5 THEN
+      severity = "HIGH"
+    ELSE IF tier1_count >= 2 THEN
+      severity = "MEDIUM"
+    ELSE
+      severity = "LOW"
+    END IF
+
+    // SPOF score calculation
+    spof_score = (tier1_count * 20.0) + (project_count * 10.0)
+
+    IF spof_score > 50 THEN
+      COLLECT: tier2_id, name, severity, spof_score, tier1_count, project_count
+    END IF
+  END FOR
+  SORT BY spof_score DESC
+  RETURN results
+END FUNCTION
 ```
 
 **Result: ChipManufacturing Ltd. je CRITICAL SPOF**
@@ -240,79 +250,54 @@ ORDER BY spof_score DESC;
 
 ##### **3B. Geographic Clustering Risk**
 
-```python
-# Python: DBSCAN clustering pro geografickou koncentraci
-from sklearn.cluster import DBSCAN
-import numpy as np
+**Pseudo-kód:**
+```pseudo
+FUNCTION detect_geographic_clusters(tier2_suppliers, radius_km = 100)
+  // Detekuj geografické clustery subdodavatelů
+  // Cluster = potenciální společné riziko (weather, infrastructure, geopolitics)
 
-def detect_geographic_clusters(tier2_suppliers: List[Dict]) -> Dict:
-    """
-    Detekuj geografické clustery subdodavatelů v radius 100km.
-    Cluster = potenciální společné riziko (weather, infrastructure, geopolitics).
-    """
-    # Extract coordinates
-    coords = np.array([
-        [s['latitude'], s['longitude']]
-        for s in tier2_suppliers
-    ])
+  coords = EXTRACT [latitude, longitude] FROM tier2_suppliers
 
-    # DBSCAN clustering (eps=100km v radiánech)
-    clustering = DBSCAN(
-        eps=100/6371,  # 100km radius
-        min_samples=3,
-        metric='haversine'
-    ).fit(np.radians(coords))
+  // DBSCAN clustering algoritmus
+  clustering = APPLY_DBSCAN(
+    data: coords,
+    radius: radius_km,
+    min_samples: 3,
+    metric: "haversine"  // geografická vzdálenost
+  )
 
-    # Analyze clusters
-    clusters = {}
-    for label in set(clustering.labels_):
-        if label == -1:  # Noise
-            continue
+  clusters = {}
+  FOR EACH cluster_label IN clustering.labels
+    IF cluster_label == NOISE THEN CONTINUE
 
-        cluster_suppliers = [
-            tier2_suppliers[i]
-            for i in range(len(tier2_suppliers))
-            if clustering.labels_[i] == label
-        ]
+    // Najdi dodavatele v clusteru
+    cluster_suppliers = FILTER tier2_suppliers
+                        WHERE clustering.label = cluster_label
 
-        cluster_value = sum(s['annual_volume_eur'] for s in cluster_suppliers)
-        cluster_projects = set()
-        for s in cluster_suppliers:
-            cluster_projects.update(s['affected_projects'])
+    // Agreguj metriky
+    cluster_value = SUM(s.annual_volume FOR s IN cluster_suppliers)
+    cluster_projects = UNION(s.affected_projects FOR s IN cluster_suppliers)
+    geographic_center = CALCULATE_CENTROID(cluster_suppliers.coordinates)
 
-        clusters[f'CLUSTER_{label}'] = {
-            'suppliers': cluster_suppliers,
-            'count': len(cluster_suppliers),
-            'total_volume': cluster_value,
-            'affected_projects': len(cluster_projects),
-            'geographic_center': calculate_centroid(cluster_suppliers),
-            'risk_level': 'HIGH' if cluster_value > 5_000_000 else 'MEDIUM'
-        }
+    // Klasifikuj riziko
+    IF cluster_value > 5M EUR THEN
+      risk_level = "HIGH"
+    ELSE
+      risk_level = "MEDIUM"
+    END IF
 
-    return clusters
-
-# Real Result
-clusters_detected = detect_geographic_clusters(hamburg_affected_tier2)
-"""
-{
-    'CLUSTER_0': {
-        'suppliers': [
-            'ConnectorSystems SpA',
-            'CablePro GmbH',
-            'MetalStamping srl'
-        ],
-        'count': 3,
-        'total_volume': 7.5M EUR,
-        'affected_projects': 8,
-        'geographic_center': {'lat': 45.2, 'lon': 11.8, 'region': 'Northern Italy'},
-        'risk_level': 'HIGH',
-        'shared_risk_factors': [
-            'Hamburg port dependency',
-            'Alpine route transportation',
-            'EU regulation changes'
-        ]
+    COLLECT cluster_info: {
+      suppliers: cluster_suppliers,
+      count: cluster_size,
+      total_volume: cluster_value,
+      affected_projects: COUNT(cluster_projects),
+      geographic_center: geographic_center,
+      risk_level: risk_level
     }
-}
+  END FOR
+  RETURN clusters
+END FUNCTION
+```
 """
 ```
 
@@ -322,35 +307,38 @@ clusters_detected = detect_geographic_clusters(hamburg_affected_tier2)
 
 ##### **3C. Vendor Lock-in Detection**
 
-```sql
--- Azure SQL: Identifikuj části bez alternativních dodavatelů
-WITH part_alternatives AS (
-    SELECT
-        p.part_number,
-        p.part_description,
-        p.primary_supplier_id,
-        ps.supplier_name as primary_supplier,
-        COUNT(DISTINCT alt.alternative_supplier_id) as alternative_count,
-        SUM(proj.monthly_volume) as monthly_demand,
-        MAX(p.lead_time_days) as lead_time
-    FROM parts_catalog p
-    JOIN tier2_suppliers ps ON p.primary_supplier_id = ps.supplier_id
-    LEFT JOIN alternative_suppliers alt ON p.part_number = alt.part_number
-    JOIN project_parts proj ON p.part_number = proj.part_number
-    WHERE proj.production_status = 'ACTIVE'
-    GROUP BY p.part_number, p.part_description, p.primary_supplier_id, ps.supplier_name
-)
-SELECT
-    *,
-    CASE
-        WHEN alternative_count = 0 AND monthly_demand > 5000 THEN 'CRITICAL_LOCKIN'
-        WHEN alternative_count <= 1 AND monthly_demand > 2000 THEN 'HIGH_LOCKIN'
-        WHEN alternative_count <= 2 THEN 'MEDIUM_LOCKIN'
-        ELSE 'DIVERSIFIED'
-    END as lockin_risk
-FROM part_alternatives
-WHERE alternative_count <= 2  -- Focus na problematické části
-ORDER BY monthly_demand DESC, alternative_count ASC;
+##### **3C. Vendor Lock-in Detection**
+
+**Pseudo-kód:**
+```pseudo
+FUNCTION detect_vendor_lockin()
+  FOR EACH part IN PartsCatalog
+    IF part.production_status != "ACTIVE" THEN CONTINUE
+
+    primary_supplier = part.primary_supplier
+    alternative_count = COUNT(part.alternative_suppliers)
+    monthly_demand = SUM(part.monthly_volume_across_projects)
+    lead_time = part.lead_time_days
+
+    // Klasifikace lock-in rizika
+    IF alternative_count = 0 AND monthly_demand > 5000 THEN
+      lockin_risk = "CRITICAL_LOCKIN"
+    ELSE IF alternative_count <= 1 AND monthly_demand > 2000 THEN
+      lockin_risk = "HIGH_LOCKIN"
+    ELSE IF alternative_count <= 2 THEN
+      lockin_risk = "MEDIUM_LOCKIN"
+    ELSE
+      lockin_risk = "DIVERSIFIED"
+    END IF
+
+    IF alternative_count <= 2 THEN
+      COLLECT: part_number, description, primary_supplier,
+               alternative_count, monthly_demand, lockin_risk
+    END IF
+  END FOR
+  SORT BY monthly_demand DESC, alternative_count ASC
+  RETURN results
+END FUNCTION
 ```
 
 **Result: 12 parts v CRITICAL/HIGH lock-in stavu**
@@ -364,62 +352,56 @@ ORDER BY monthly_demand DESC, alternative_count ASC;
 
 ### Step 4: Impact Quantification & Decision Support
 
-**MCOP Agent: Vypočítej business impact Hamburg blockage**
+**MCOP Agent: Vypočítej business impact Hamburg blockage (pseudo-kód)**
 
-```python
-# Python: Monte Carlo simulace pro uncertainty quantification
-import numpy as np
+```pseudo
+FUNCTION quantify_crisis_impact(affected_tier1_ids, blockage_duration_days, simulation_runs = 1000)
+  // Monte Carlo simulace pro uncertainty quantification
+  // Spočítej business impact stávky v Hamburgu na naše projekty
 
-def quantify_crisis_impact(
-    affected_tier1_ids: List[str],
-    blockage_duration_days: int = 10,
-    simulation_runs: int = 1000
-) -> Dict:
-    """
-    Spočítej business impact stávky v Hamburgu na naše projekty.
-    Použij Monte Carlo pro uncertainty (delivery delays, alternative routing costs).
-    """
-    results = []
+  results = []
 
-    for _ in range(simulation_runs):
-        # Vary parameters with uncertainty
+  FOR i = 1 TO simulation_runs
+    // Vary parameters with uncertainty (random sampling)
         actual_duration = np.random.normal(blockage_duration_days, 2)  # ±2 dny
         alternative_route_success = np.random.binomial(1, 0.7)  # 70% šance úspěchu
         cost_multiplier = np.random.uniform(1.3, 2.1) if alternative_route_success else 3.5
 
-        # Calculate impact
-        total_delay_days = actual_duration if not alternative_route_success else actual_duration * 0.4
-        production_loss = calculate_production_value_at_risk(
-            affected_tier1_ids,
-            delay_days=total_delay_days
-        )
-        additional_costs = calculate_expedited_shipping_costs(
-            affected_tier1_ids,
-            cost_multiplier=cost_multiplier
-        )
 
-        results.append({
-            'production_loss_eur': production_loss,
-            'additional_costs_eur': additional_costs,
-            'total_impact_eur': production_loss + additional_costs
-        })
+    // Calculate impact
+    total_delay_days = IF alternative_route_success THEN
+                         actual_duration * 0.4
+                       ELSE
+                         actual_duration
 
-    # Aggregate results
-    impacts = [r['total_impact_eur'] for r in results]
-    return {
-        'mean_impact': np.mean(impacts),
-        'median_impact': np.median(impacts),
-        'p95_worst_case': np.percentile(impacts, 95),
-        'min_impact': np.min(impacts),
-        'max_impact': np.max(impacts),
-        'confidence_interval': (np.percentile(impacts, 5), np.percentile(impacts, 95))
+    production_loss = CALCULATE_PRODUCTION_VALUE_AT_RISK(
+      affected_tier1_ids,
+      delay_days: total_delay_days
+    )
+
+    additional_costs = CALCULATE_EXPEDITED_SHIPPING_COSTS(
+      affected_tier1_ids,
+      cost_multiplier: cost_multiplier
+    )
+
+    APPEND results: {
+      production_loss_eur: production_loss,
+      additional_costs_eur: additional_costs,
+      total_impact_eur: production_loss + additional_costs
     }
+  END FOR
 
-# Real Calculation
-impact = quantify_crisis_impact(
-    affected_tier1_ids=['SUP-04521', 'SUP-09234', 'SUP-01847'],
-    blockage_duration_days=10
-)
+  // Aggregate results
+  impacts = EXTRACT total_impact_eur FROM results
+  RETURN {
+    mean_impact: MEAN(impacts),
+    median_impact: MEDIAN(impacts),
+    p95_worst_case: PERCENTILE(impacts, 95),
+    min_impact: MIN(impacts),
+    max_impact: MAX(impacts),
+    confidence_interval: [PERCENTILE(impacts, 5), PERCENTILE(impacts, 95)]
+  }
+END FUNCTION
 ```
 
 **Result: Hamburg Blockage Impact**
@@ -585,57 +567,56 @@ graph TB
 - ✅ Kvantifikujeme impact pomocí Monte Carlo simulace
 
 ### Future State: Proactive Prediction
-**MCOP as Predictive Layer:**
+**MCOP as Predictive Layer (pseudo-kód):**
 
-```python
-# Budoucí vize: MCOP s prediktivním modelem
-class PredictiveMCOPAgent:
-    """
-    MCOP agent s ML modelem predikuje supply chain disruptions 7-30 dní dopředu.
-    """
-    async def monitor_continuous(self):
-        """
-        Kontinuální monitoring external signals → predikce rizika → proaktivní alert.
-        """
-        while True:
-            # 1. Sbírej external signals
-            signals = await self.collect_signals([
-                'news_api',          # Geopolitické události
-                'weather_api',       # Počasí v klíčových regionech
-                'port_api',          # Port congestion data
-                'commodity_prices',  # Ceny commodities (indikátor poptávky)
-                'sentiment_analysis' # Social media sentiment
-            ])
+```pseudo
+CLASS PredictiveMCOPAgent
+  // MCOP agent s ML modelem predikuje supply chain disruptions 7-30 dní dopředu
 
-            # 2. ML model: Predikuj disruption probability pro každého Tier-2
-            for tier2 in self.get_all_tier2_suppliers():
-                features = self.extract_features(tier2, signals)
-                disruption_prob = self.ml_model.predict_proba(features)
+  ASYNC FUNCTION monitor_continuous()
+    // Kontinuální monitoring external signals → predikce rizika → proaktivní alert
 
-                if disruption_prob > 0.3:  # 30% threshold
-                    # 3. Proaktivní akce PŘED krizí
-                    await self.trigger_proactive_alert(
-                        supplier=tier2,
-                        probability=disruption_prob,
-                        lead_time_days=self.estimate_lead_time(signals),
-                        recommended_actions=self.generate_mitigation_plan(tier2)
-                    )
+    LOOP FOREVER
+      // 1. Sbírej external signals
+      signals = COLLECT_SIGNALS([
+        news_api,          // Geopolitické události
+        weather_api,       // Počasí v klíčových regionech
+        port_api,          // Port congestion data
+        commodity_prices,  // Ceny commodities (indikátor poptávky)
+        sentiment_analysis // Social media sentiment
+      ])
 
-            await asyncio.sleep(3600)  # Check každou hodinu
+      // 2. ML model: Predikuj disruption probability pro každého Tier-2
+      FOR EACH tier2 IN all_tier2_suppliers
+        features = EXTRACT_FEATURES(tier2, signals)
+        disruption_prob = ML_MODEL.predict_probability(features)
 
-    def extract_features(self, tier2: Dict, signals: Dict) -> np.ndarray:
-        """
-        Feature engineering pro prediktivní model.
-        """
-        return np.array([
-            # TierIndex features
-            tier2['spof_score'],
-            tier2['geographic_cluster_size'],
-            tier2['financial_health_score'],
+        IF disruption_prob > 0.3 THEN  // 30% threshold
+          // 3. Proaktivní akce PŘED krizí
+          TRIGGER_PROACTIVE_ALERT(
+            supplier: tier2,
+            probability: disruption_prob,
+            lead_time_days: ESTIMATE_LEAD_TIME(signals),
+            recommended_actions: GENERATE_MITIGATION_PLAN(tier2)
+          )
+        END IF
+      END FOR
 
-            # External signals
-            signals['port_congestion'][tier2['primary_port']],
-            signals['geopolitical_risk'][tier2['country']],
+      WAIT 1 hour  // Check každou hodinu
+    END LOOP
+  END FUNCTION
+
+  FUNCTION extract_features(tier2, signals)
+    // Feature engineering pro prediktivní model
+    RETURN [
+      // TierIndex features
+      tier2.spof_score,
+      tier2.geographic_cluster_size,
+      tier2.financial_health_score,
+
+      // External signals
+      signals.port_congestion[tier2.primary_port],
+      signals.geopolitical_risk[tier2.country],
             signals['weather_severity'][tier2['region']],
 
             # Historical patterns

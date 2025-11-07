@@ -181,8 +181,8 @@ MEDIUM SPOF (2 Tier-1 dependent):
 - ✅ **Alternative availability** - Existují záložní dodavatelé?
 
 ### **Detection algorithms:**
-```python
-# Network centrality (grafy)
+```pseudo
+// Network centrality (grafy)
 SPOF_score = (
     tier1_dependent_count * 0.3 +
     project_criticality * 0.35 +
