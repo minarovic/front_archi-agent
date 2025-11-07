@@ -22,55 +22,48 @@ Když procurement manager nebo risk manager potřebuje odpověď typu:
 
 ## 💡 Proč TierIndex potřebujeme: 4 praktické příklady
 
-### **Příklad 1: "Kde používáme tenhle HS kód?"**
+> **Poznámka:** Níže uvedené situace jsou anonymizované modelové scénáře – čísla i názvy slouží jen jako ilustrace.
 
-**Business situace:**
-Nové EU regulace zakazují import určitých dílů klasifikovaných pod HS code `8708.29` (brzdové komponenty) z Ruska.
+### **Příklad 1: "Rychlé posouzení nového dodavatele (onboarding screening)"**
+
+**Modelová situace:**
+Potřebujeme urychleně zařadit nového Tier-1 nebo Tier-2 dodavatele do výběrového řízení.
+
+**Co nás zajímá:**
+- Má dodavatel přímé nebo nepřímé sankční riziko?
+- Je vlastněn firmou z rizikové jurisdikce?
+- Má dostatečné finanční zdraví (credit score, revenue, failure risk)?
+- Základní info: počet zaměstnanců, zkušenosti s podobnými díly?
 
 **Bez TierIndex:**
-- Manuální Excel audit 3000+ dodavatelů
-- Email dotazy na každého dodavatele
-- 2-3 týdny práce
-- Neúplná data (dodavatelé nereagují)
+- Manuální sběr dat z DnB, Sayari, SAP
+- Nejasná vlastnická struktura (UBO není viditelný)
+- Několik dní práce
+- Riziko přehlédnutí skrytého sankčního propojení
 
-**S TierIndex:**
-```pseudo
-FUNCTION find_suppliers_by_hs_code(hs_code, origin_country, tier_levels)
-  QUERY TierIndex.EntityTrade
-    FILTER BY hs_code = input_hs_code
-    FILTER BY origin_country = input_country
-    FILTER BY tier_level IN input_tiers
-  RETURN supplier_name, country, annual_volume
-END FUNCTION
-
-// Použití:
-results = find_suppliers_by_hs_code(
-  hs_code: "8708.29",
-  origin_country: "RU",
-  tier_levels: [1, 2]
-)
-```
-
-**Output:**
-| Supplier       | Country | Annual Volume | Tier   |
-| -------------- | ------- | ------------- | ------ |
-| BrakeSys GmbH  | DE      | 2.1M EUR      | Tier-1 |
-| PartSupply Ltd | CZ      | 890K EUR      | Tier-2 |
-
-**Čas:** <30 sekund
-**Akce:** Kontaktovat 2 dodavatele místo 3000
+**Co má TierIndex zajistit:**
+- Jednotný dotaz spojující Sayari (UBO, watchlist), DnB (financials), SAP (historie), TierIndex (Tier relationships)
+- Výstup: Supplier profile s finančním skóre, sankčním rizikem, vlastnickou strukturou, zkušenostmi (podobné HS kódy)
+- Výsledek v řádu minut, aby nákupčí mohl rychle rozhodnout
 
 #### **Co nám TierIndex poskytl:**
-- ✅ **HS Codes** = Harmonized System klasifikace (co se obchoduje)
-- ✅ **Country origin** = Odkud díly pocházejí
-- ✅ **Tier level** = Je to náš přímý dodavatel nebo sub-dodavatel?
+- ✅ **Sayari Sanctions** = Watchlist matching, UBO complexity, vlastnická struktura
+- ✅ **DnB Financial** = Credit rating, failure score, revenue, počet zaměstnanců
+- ✅ **HS Codes + Trade data** = Zkušenosti s podobnými commodities
+- ✅ **Tier level** = Je to nový Tier-1 nebo skrytý Tier-3 subdodavatel?
 
 ---
 
-### **Příklad 2: "Kolik projektů je závislých na tomhle dodavateli?"**
+### **Příklad 2: "Prevence výpadku – detekce zhoršení u stávajícího dodavatele"**
 
-**Business situace:**
-Dodavatel `ElectroComponents GmbH` právě vyhlásil bankrot. Musíme okamžitě vědět dopady.
+**Modelová situace:**
+Dodavatel (Tier-1) začal zpožďovat fakturace nebo požádal o změnu platebních podmínek → žádáme okamžitou kontrolu finančního zdraví.
+
+**Co nás zajímá:**
+- Má finanční problémy? (credit score trend, failure risk)
+- Je v systému varování o zhoršení solventnosti nebo pozdních platách?
+- Je napojen na subdodavatele v rizikové zemi (geopolitické riziko)?
+- Potřebujeme včas zvážit alternativy
 
 **Bez TierIndex:**
 - Projít SAP zakázky ručně
@@ -79,43 +72,17 @@ Dodavatel `ElectroComponents GmbH` právě vyhlásil bankrot. Musíme okamžitě
 - 1-2 dny analýzy
 - Mezitím produkce může stát
 
-**S TierIndex:**
-```pseudo
-FUNCTION analyze_supplier_impact(supplier_id, active_phases)
-  FOR EACH project IN TierIndex.Projects
-    IF project.production_phase IN active_phases THEN
-      affected_parts = COUNT(BOM.parts WHERE supplier = supplier_id)
-      monthly_volume = SUM(BOM.monthly_volume WHERE supplier = supplier_id)
-
-      IF affected_parts > 0 THEN
-        COLLECT: project_name, phase, affected_parts, monthly_volume
-      END IF
-    END IF
-  END FOR
-  RETURN results
-END FUNCTION
-
-// Použití:
-impact = analyze_supplier_impact(
-  supplier_id: "SUP-04521",  // ElectroComponents
-  active_phases: ["SERIAL", "RAMP_UP"]
-)
-```
-
-**Output:**
-| Project               | Phase   | Parts | Monthly Volume at Risk |
-| --------------------- | ------- | ----- | ---------------------- |
-| EV Battery Controller | SERIAL  | 12    | 8,500 units            |
-| Smart Infotainment    | RAMP_UP | 5     | 2,300 units            |
-| Safety System Gen3    | SERIAL  | 8     | 6,100 units            |
-
-**Čas:** <1 minuta
-**Akce:** Okamžitě aktivovat alternativní dodavatele pro 3 kritické projekty
+**Cílová funkčnost:**
+- Jednotný dotaz kombinující DnB (financial trends), SAP (payment behavior), Sayari (UBO changes)
+- Výstup: Financial deterioration alert s důkazy (credit score ↓, late payments ↑, revenue trend ↓)
+- Automatické doporučení: ověřit finance, navýšit zásoby, připravit RFQ pro alternativy
+- Odezva v minutách, aby navazující workflow (aktivace záložních zdrojů) mohlo běžet automatizovaně
 
 #### **Co nám TierIndex poskytl:**
-- ✅ **BOM (Bill of Materials)** = Hierarchie dílů ve vozidlech
-- ✅ **Project mappings** = Které projekty používají které díly
-- ✅ **Supplier relationships** = Kdo dodává co
+- ✅ **DnB financial trends** - Credit score timeline, failure risk, revenue trend
+- ✅ **SAP payment behavior** - Late invoices, credit notes, platební disciplína
+- ✅ **Sayari UBO** - Změny vlastnické struktury (nový fond, čínská entita?)
+- ✅ **Tier-2/3 dependencies** - Subdodavatelský řetězec (geografické riziko)
 
 ---
 
@@ -129,7 +96,7 @@ Risk manager chce proaktivně identifikovat Single Points of Failure – subdoda
 - Tier-1 dodavatelé nesdílí své sub-dodavatele
 - Discover SPOF až když nastane krize
 
-**S TierIndex:**
+**Co má TierIndex zvládnout:**
 
 **UML Activity Diagram:**
 ```mermaid
@@ -141,9 +108,9 @@ graph TD
     C --> F{Evaluate Risk}
     D --> F
     E --> F
-    F -->|tier1 ≥ 5 AND projects ≥ 8| G["⚠️ CRITICAL SPOF"]
-    F -->|tier1 ≥ 3| H["⚠️ HIGH SPOF"]
-    F -->|tier1 < 3| I["✓ MONITORED"]
+    F -->|tier1 ≥ HIGH_THRESHOLD AND projects ≥ HIGH_PROJECT_THRESHOLD| G["⚠️ CRITICAL SPOF"]
+    F -->|tier1 ≥ MEDIUM_THRESHOLD| H["⚠️ HIGH SPOF"]
+    F -->|tier1 < MEDIUM_THRESHOLD| I["✓ MONITORED"]
     G --> J[Sort by Exposure]
     H --> J
     I --> J
@@ -158,15 +125,15 @@ FUNCTION detect_spof_in_tier2()
     project_count = COUNT(affected projects via Tier-1)
     total_exposure = SUM(annual volumes from Tier-1)
 
-    IF tier1_count >= 5 AND project_count >= 8 THEN
+    IF tier1_count >= HIGH_THRESHOLD AND project_count >= HIGH_PROJECT_THRESHOLD THEN
       risk_level = "CRITICAL_SPOF"
-    ELSE IF tier1_count >= 3 THEN
+    ELSE IF tier1_count >= MEDIUM_THRESHOLD THEN
       risk_level = "HIGH_SPOF"
     ELSE
       risk_level = "MONITORED"
     END IF
 
-    IF tier1_count >= 3 THEN
+    IF tier1_count >= MEDIUM_THRESHOLD THEN
       COLLECT: supplier_id, name, risk_level, tier1_count, project_count, exposure
     END IF
   END FOR
@@ -175,14 +142,14 @@ FUNCTION detect_spof_in_tier2()
 END FUNCTION
 ```
 
-**Output:**
-| Supplier (Tier-2)     | Tier-1 Dependent | Projects | Exposure | SPOF Level    |
-| --------------------- | ---------------- | -------- | -------- | ------------- |
-| ChipManufacturing Ltd | 5                | 12       | 8.2M EUR | CRITICAL_SPOF |
-| CablePro GmbH         | 4                | 9        | 5.1M EUR | HIGH_SPOF     |
+**Příklad výstupu:**
+| Supplier (Tier-2)     | Tier-1 Dependent | Projects      | Exposure                | SPOF Level    |
+| --------------------- | ---------------- | ------------- | ----------------------- | ------------- |
+| Tier-2 Supplier Alpha | Vyšší počet      | Vyšší počet   | Významná finanční zátěž | CRITICAL_SPOF |
+| Tier-2 Supplier Beta  | Střední počet    | Střední počet | Střední finanční zátěž  | HIGH_SPOF     |
 
-**Čas:** <2 minuty
-**Akce:** Urgentně diverzifikovat sourcing pro ChipManufacturing
+**Čas:** Krátký horizont
+**Akce:** Urgentně diverzifikovat sourcing pro CRITICAL_SPOF dodavatele
 
 #### **Co nám TierIndex poskytl:**
 - ✅ **Tier-1 → Tier-2 relationships** = Kdo dodává komu (visibility do sub-dodavatelů)
@@ -202,7 +169,7 @@ Strategický procurement plánuje diverzifikaci. Chce vědět, které commodity 
 - Ruční spojování dat z multiple systémů
 - Týdny práce
 
-**S TierIndex:**
+**Cílové chování TierIndex:**
 
 **Pseudo-kód:**
 ```pseudo
@@ -242,15 +209,133 @@ FUNCTION analyze_geographic_clustering_risk()
 END FUNCTION
 ```
 
-**Output:**
-| Commodity Group (WGR) | Country | Suppliers | Annual Spend | Risk        | Share % |
-| --------------------- | ------- | --------- | ------------ | ----------- | ------- |
-| Elektrika             | CN      | 12        | 15.2M EUR    | HIGH_RISK   | 68%     |
-| Plastové díly         | TH      | 8         | 8.1M EUR     | MEDIUM_RISK | 42%     |
-| Kovové komponenty     | TR      | 5         | 6.3M EUR     | MEDIUM_RISK | 35%     |
+**Příklad výstupu:**
+| Commodity Group (WGR) | Country  | Suppliers     | Annual Spend    | Risk        | Share %             |
+| --------------------- | -------- | ------------- | --------------- | ----------- | ------------------- |
+| Elektrika             | Region A | Vyšší počet   | Významná částka | HIGH_RISK   | Vysoká koncentrace  |
+| Plastové díly         | Region B | Střední počet | Střední částka  | MEDIUM_RISK | Střední koncentrace |
+| Kovové komponenty     | Region C | Nižší počet   | Střední částka  | MEDIUM_RISK | Nižší koncentrace   |
 
-**Čas:** <5 minut
-**Akce:** Prioritizovat diverzifikaci "Elektrika" commodity (68% koncentrace v Číně)
+**Čas:** Krátký horizont
+**Akce:** Prioritizovat diverzifikaci "Elektrika" commodity (vysoká geografická koncentrace)
+
+---
+
+### **Příklad 5: "Proaktivní identifikace kumulace rizik napříč dodavateli" (Scénář 10)**
+
+**Business situace:**
+Máme několik Tier-1 dodavatelů pro podobné komodity (např. plastové komponenty). Chceme vědět, zda se více nezávislých Tier-1 dodavatelů nespoléhá na stejného kritického Tier-2/3 subdodavatele.
+
+**Co nás zajímá:**
+- Sdílí více Tier-1 dodavatelů stejného Tier-2 nebo Tier-3 subdodavatele?
+- Jsou tyto subdodavatelé ve stejném geograficky rizikovém regionu?
+- Jaké by byly dopady, kdyby tento společný Tier-2/3 subdodavatel náhle vypadl? Ovlivnilo by to více projektů současně?
+
+**Bez TierIndex:**
+- Tier-1 dodavatelé nesdílí své sub-dodavatele
+- Nelze zjistit skryté duplicitní závislosti
+- Discovery až při krizi (např. společný Tier-3 zkrachuje → zjistíme, že zasáhl 5 Tier-1 současně)
+
+**Co má TierIndex zvládnout:**
+
+**UML Sequence Diagram:**
+```mermaid
+sequenceDiagram
+    participant RM as Risk Manager
+    participant MCOP as MCOP Orchestrator
+    participant TI as TierIndex
+    participant Graph as Graph Analytics
+
+    RM->>MCOP: Query: Najdi duplicitní Tier-2/3 závislosti
+    MCOP->>TI: Get all Tier-1 suppliers for commodity_group
+    TI-->>MCOP: List of Tier-1 suppliers
+    MCOP->>Graph: Traverse Tier-1 → Tier-2 → Tier-3 relationships
+    Graph->>Graph: Count: How many Tier-1 depend on each Tier-2/3?
+    Graph->>Graph: Aggregate: Projects + volumes at risk
+    Graph-->>MCOP: Ranked list (Tier-2/3 by dependency count)
+    MCOP->>TI: Enrich with geographic + financial risk
+    TI-->>MCOP: Risk-scored duplicitní dependencies
+    MCOP-->>RM: Report: Hidden SPOF across Tier-1 portfolio
+```
+
+**Příklad výstupu:**
+| Tier-2/3 Supplier     | Dependent Tier-1 Count | Projects Affected | Geographic Risk | Financial Risk | SPOF Severity |
+| --------------------- | ---------------------- | ----------------- | --------------- | -------------- | ------------- |
+| Tier-2 Plastics Alpha | 4 Tier-1               | 9 projects        | HIGH (Region A) | MEDIUM         | CRITICAL      |
+| Tier-3 Resin Beta     | 3 Tier-1               | 6 projects        | MEDIUM          | HIGH           | HIGH          |
+| Tier-2 Tooling Gamma  | 2 Tier-1               | 3 projects        | LOW             | MEDIUM         | MEDIUM        |
+
+**Klíčový insight:**
+> Plastový subdodavatel "Tier-2 Plastics Alpha" je skrytý SPOF - pokud vypadne, zasáhne 4 nezávislé Tier-1 dodavatele současně. Nutná urgentní diverzifikace.
+
+**Čas:** Minuty (graph traversal)
+**Akce:** Dual-sourcing pro kritické plastové komponenty, audit závislostí
+
+---
+
+### **Příklad 6: "What-if modelování logistických disrupcí" (Scénář 13)**
+
+**Business situace:**
+Chceme se připravit na potenciální budoucí krize - co by se stalo, kdyby došlo k uzavření klíčového logistického uzlu (např. přístav, hranice, dopravní koridor)?
+
+**Co nás zajímá:**
+- Pokud by došlo k uzavření kritického logistického uzlu, dokáže systém odhadnout, kteří Tier-1 dodavatelé a které díly by byly nejrychleji zasaženy?
+- Jak by se změnil rizikový profil portfolia dodavatelů, pokud by určitá země zavedla rozsáhlá obchodní omezení?
+
+**Bez TierIndex:**
+- Logistické trasy jsou implicitní (country of origin + import port)
+- Nelze rychle simulovat what-if scénáře
+- Ruční Excel modelování trvá dny
+
+**Co má TierIndex zvládnout:**
+
+**Pseudo-kód:**
+```pseudo
+FUNCTION simulate_logistics_disruption(disrupted_node_type, disrupted_location)
+  // disrupted_node_type: "port", "border", "region"
+  // disrupted_location: generic identifier (not specific Hamburg)
+
+  affected_suppliers = []
+
+  FOR EACH tier1 IN TierIndex.Tier1Suppliers
+    // Check if Tier-1 depends on disrupted logistics node
+    IF tier1.primary_logistics_dependency == disrupted_location THEN
+      affected_suppliers.ADD(tier1)
+    END IF
+
+    // Check Tier-2/3 dependencies
+    FOR EACH tier2 IN tier1.tier2_suppliers
+      IF tier2.logistics_dependency == disrupted_location THEN
+        affected_suppliers.ADD(tier1)  // Tier-1 indirectly affected
+      END IF
+    END FOR
+  END FOR
+
+  // Calculate impact
+  FOR EACH supplier IN affected_suppliers
+    projects = GET_PROJECTS(supplier)
+    parts = GET_PARTS(supplier)
+    volume_at_risk = SUM(supplier.annual_volumes)
+
+    AGGREGATE: supplier, projects, parts, volume_at_risk, alternative_routes
+  END FOR
+
+  SORT BY volume_at_risk DESC
+  RETURN what_if_scenario_report
+END FUNCTION
+```
+
+**Příklad výstupu (what-if scénář):**
+| Scenario                        | Affected Tier-1 | Projects | Parts at Risk       | Alternative Routes Available? |
+| ------------------------------- | --------------- | -------- | ------------------- | ----------------------------- |
+| Critical logistics node closure | 6 Tier-1        | 11       | Významný objem dílů | 3 Tier-1 ANO, 3 Tier-1 NE     |
+| Trade embargo (Region A)        | 8 Tier-1        | 14       | Vysoký objem dílů   | 2 Tier-1 ANO, 6 Tier-1 NE     |
+
+**Klíčový insight:**
+> V případě uzavření kritického logistického uzlu by bylo zasaženo 6 Tier-1 dodavatelů, ale pouze 3 mají připravené alternativní trasy. Potřebujeme pre-planning pro zbývající 3 Tier-1.
+
+**Čas:** Minuty (parametrický dotaz)
+**Akce:** Připravit contingency plány, identifikovat alternativní logistické koridory
 
 #### **Co nám TierIndex poskytl:**
 - ✅ **WGR (Warengruppe)** = Škoda Auto commodity taxonomy
@@ -265,14 +350,20 @@ END FUNCTION
 **Co to je:** 6-místné mezinárodní kódy pro klasifikaci obchodovaného zboží
 **Proč důležité:** Celní úřady, trade data, regulace
 
+**Klíčová vlastnost - změna napříč tiery:**
+> **Každý tier level má odlišný HS kód, protože produkt prochází transformací ve výrobním řetězci.**
+> - Tier-3: `8542.31` (Integrated circuits - čipy)
+> - Tier-2: `8512.20` (Elektronické moduly - sestavený kontroler)
+> - Tier-1: `8708.29` (Kompletní brzdové komponenty - finální assembly)
+
 **Příklad:**
-- `8708.29` = Brzdové komponenty
-- `8542.31` = Integrated circuits (čipy)
-- `8544.42` = Ignition wiring (kabeláž)
+- `8708.29` = Brzdové komponenty (Tier-1 assembly)
+- `8542.31` = Integrated circuits (Tier-3 čipy)
+- `8544.42` = Ignition wiring (Tier-2 kabeláž)
 
 **Kde to používáme:**
 - Sayari Trade API vrací HS kódy pro každý trade relationship
-- Mapujeme dodavatele na HS kódy → vidíme "co vyrábějí"
+- Mapujeme dodavatele na HS kódy → vidíme "co vyrábějí" na každém tier levelu
 - Compliance checks (EU import restrictions)
 
 ---
@@ -302,24 +393,11 @@ HS 8708.29 (Brakes) → WGR-6100 (Kovové komponenty)
 
 ### **3. BOM (Bill of Materials) – Part Hierarchies**
 
-**Co to je:** Hierarchie parent-child vztahů mezi díly ve vozidle
-**Proč důležité:** Impact propagation, project dependencies
-
-**Příklad struktury:**
-```
-Vehicle Model: Octavia EV
-├── Battery Pack Assembly (parent)
-│   ├── Battery Controller Module (child) ← Supplier: ElectroComponents
-│   ├── Cooling System (child)
-│   └── Wiring Harness (child) ← Supplier: CablePro
-├── Infotainment System (parent)
-│   ├── Display Unit (child)
-│   └── Connectivity Module (child) ← Supplier: ElectroComponents
-```
-
-**Kde to používáme:**
-- Crisis impact analysis: "ElectroComponents zkrachoval → Battery Pack + Infotainment jsou blocked"
-- Alternative matching: "Potřebuji náhradníka pro Battery Controller → Kdo jiný dělá podobné HS kódy?"
+| **Aspekt**        | **Popis**                                                                                                |
+| ----------------- | -------------------------------------------------------------------------------------------------------- |
+| **Co to je**      | Kusovník - hierarchie parent-child vztahů mezi díly ve vozidle                                           |
+| **Proč důležité** | Impact propagation ("Supplier A zkrachoval → Battery Pack + Infotainment blocked"), project dependencies |
+| **Kde používáme** | Crisis impact analysis, alternative matching podle HS kódů                                               |
 
 ---
 
@@ -331,17 +409,17 @@ Vehicle Model: Octavia EV
 **Příklad grafu:**
 ```
 Škoda Auto (zákazník)
-├── ElectroComponents GmbH (Tier-1)
-│   ├── ChipManufacturing Ltd (Tier-2, Taiwan)
+├── Tier-1 Supplier (Tier-1)
+│   ├── Supplier X (Tier-2) (Tier-2, Taiwan)
 │   │   └── SiliconWafer Corp (Tier-3, South Korea)
-│   └── ConnectorSystems SpA (Tier-2, Italy)
+│   └── Supplier Y (Tier-2) (Tier-2, Italy)
 ├── BrakeSystem Solutions (Tier-1)
-│   └── CastingPro Ltd (Tier-2, Czech Republic)
+│   └── Supplier D (Tier-2) (Tier-2, Czech Republic)
 ```
 
 **Kde to používáme:**
 - N-tier traversal: "Který Tier-3 dodavatel má sankce?"
-- SPOF detection: "ChipManufacturing dodává 5 Tier-1 → CRITICAL SPOF"
+- SPOF detection: "Supplier X dodává 5 Tier-1 → CRITICAL SPOF"
 - Geographic clustering: "3 Tier-2 dodavatelé v Northern Italy → shared risk"
 
 ---
@@ -364,7 +442,7 @@ Vehicle Model: Octavia EV
 **Update frequency:** Denní polling (Notifications API) + měsíční baseline (Bulk Data)
 
 **Příklad použití:**
-> "Chci vědět, kdo jsou sub-dodavatelé ElectroComponents"
+> "Chci vědět, kdo jsou sub-dodavatelé Supplier A"
 > → Sayari API vrátí graf upstream suppliers s HS kódy
 
 ---
@@ -385,8 +463,8 @@ Vehicle Model: Octavia EV
 **Update frequency:** Denní API calls pro monitorované dodavatele
 
 **Příklad použití:**
-> "Je ElectroComponents finančně zdravý?"
-> → DnB vrátí: Credit rating 78, Failure score 30, Revenue trend -15% → **Rizikový dodavatel**
+> "Je Supplier A finančně zdravý?"
+> → DnB vrátí: Credit rating nižší, Elevated failure score, Revenue trend klesající → **Rizikový dodavatel**
 
 ---
 
@@ -406,12 +484,12 @@ Vehicle Model: Octavia EV
 **Update frequency:** Denní ETL z SAP do DAP
 
 **Příklad použití:**
-> "Jak se ElectroComponents chová v platbách?"
-> → SAP: 23% faktur po splatnosti (bylo 5%) → **Deteriorating behavior**
+> "Jak se Supplier A chová v platbách?"
+> → SAP: Významný podstan faktur po splatnosti (předchozí baseline nízký) → **Deteriorating behavior**
 
 ---
 
-## 🏗️ Databricks Architecture: Bronze → Silver → Gold
+## 🏭️ DAP Architecture: Bronze → Silver → Gold
 
 ### **Bronze Layer: Raw Data**
 Surová data ze 3 zdrojů, immutable audit trail
@@ -460,7 +538,7 @@ staging_wsp.tierindex_gold
 ## 🤖 MCOP: Metadata Orchestrator pro TierIndex
 
 ### **Co je MCOP?**
-> **Metadata Copilot (MCOP) je helper agent, který propojuje TierIndex data s metadata systémy (Collibra, Unity Catalog, DAP) a umožňuje jejich enrichment.**
+> **Metadata Copilot (MCOP) je helper agent, který propojuje TierIndex data s metadata systémy (Collibra, DAP Catalog, DAP) a umožňuje jejich enrichment.**
 
 ### **MCOP ≠ TierIndex**
 - **TierIndex** = Data platform (samotná data o dodavatelích)
@@ -468,21 +546,21 @@ staging_wsp.tierindex_gold
 
 ### **Příklad MCOP workflow:**
 
-**Situace:** Procurement manager chce analýzu Hamburg port blockage
+**Situace:** Procurement manager chce analýzu kritický evropský přístav port blockage
 
 **MCOP orchestrace:**
-1. **Query TierIndex** → Kteří Tier-1 používají Hamburg jako import port?
+1. **Query TierIndex** → Kteří Tier-1 používají kritický evropský přístav jako import port?
 2. **Enrich s Collibra** → Jaká je data quality score pro tyto dodavatele?
-3. **Query Unity Catalog** → Jaké HS kódy obchodují přes Hamburg?
+3. **Query DAP Catalog** → Jaké HS kódy obchodují přes kritický evropský přístav?
 4. **Query DAP (SAP)** → Jaké jsou annual volumes a projekty?
 5. **Aggregate & synthesize** → Kompletní risk report
-6. **Log to Unity Catalog** → Audit trail všech transformací
+6. **Log to DAP Catalog** → Audit trail všech transformací
 
 **Result:**
 ```json
 {
   "affected_tier1": 3,
-  "total_exposure": "25.8M EUR",
+  "total_exposure": "Významná finanční zátěž",
   "projects_at_risk": 10,
   "mcop_metadata": {
     "data_quality_avg": 87,
@@ -507,12 +585,12 @@ MCOP metadata umožní **ML modely** predikovat supplier risks:
 
 ## 🎯 Shrnutí: Proč TierIndex potřebujeme
 
-| Use Case                                 | Bez TierIndex            | S TierIndex           |
+| Use Case                                 | Bez TierIndex            | Cílový stav TierIndex |
 | ---------------------------------------- | ------------------------ | --------------------- |
 | **Compliance check** (HS codes)          | 2-3 týdny manuálně       | <30 sekund SQL        |
-| **Crisis impact** (dodavatel zkrachoval) | 1-2 dny analýzy          | <1 minuta             |
-| **SPOF detection** (sub-dodavatelé)      | Nelze zjistit            | <2 minuty graph query |
-| **Commodity risk** (WGR clustering)      | Týdny multi-systém audit | <5 minut analytics    |
+| **Crisis impact** (dodavatel zkrachoval) | Několik dní analýzy      | Minuty                |
+| **SPOF detection** (sub-dodavatelé)      | Nelze zjistit            | Minuty (graph query)  |
+| **Commodity risk** (WGR clustering)      | Týdny multi-systém audit | Minuty (analytics)    |
 
 ### **TierIndex = Enabler pro:**
 1. ✅ Rychlé odpovědi na komplexní dodavatelské otázky

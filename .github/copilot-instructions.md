@@ -270,6 +270,10 @@ AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
 - ✅ LangChain compliance checker (Phase 1)
 - ✅ Tool 0 implemented with Azure AI Foundry
 - ✅ All notebooks migrated to Azure (tool0, tool1, tool2)
+- ✅ Workshop Presentation Materials (2025-11-07):
+  - 5 documents: TierIndex foundation, capabilities, architecture, use cases, slides
+  - Pseudo-kód a UML diagramy místo SQL/Python
+  - MCOP positioned as metadata orchestrator
 
 ### Phase 2 (Planned)
 - Online docs sync via MCP tool
@@ -281,9 +285,17 @@ AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
 ## Contact & References
 
 **Documentation:**
-- Local: `docs_langgraph/*.md`
-- Memory: `/memories/scrum-skills-implementation.md`, `/memories/azure-ai-foundry-setup.md`
+- Local: `docs_langgraph/*.md`, `docs_langgraph/workshop_presentation/*.md`
+- Memory: `/memories/azure-ai-foundry-setup.md`, `/memories/workshop-terminology-translation.md`
 - Template: `scrum/backlog/_STORY_TEMPLATE.md`
+
+**Workshop Materials (2025-11-07):**
+- `docs_langgraph/workshop_presentation/README.md` - Workshop structure
+- `03_tierindex_context.md` - Foundation with practical examples
+- `02_capabilities_overview.md` - 4 business capabilities
+- `04_architecture_decisions.md` - 5 key decisions
+- `05_slide_deck.md` - 15-slide executive presentation
+- `01_mapping_verification_use_case.md` - Optional deep dive
 
 **Skills Pattern Reference:**
 - Based on Anthropic Skills best practices

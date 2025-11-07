@@ -19,13 +19,13 @@
    - 3 zdroje: Sayari (relationships), DnB (financial), SAP (business)
 
 2. **Proč to potřebujeme:**
-   - Rychlé odpovědi na komplexní otázky (<5 min vs 2-3 dny)
+   - Rychlé odpovědi na komplexní otázky (near real-time vs několik dní)
    - Visibility do sub-dodavatelů (Tier-2/3)
-   - Risk quantification (EUR, projekty, díly)
+   - Risk quantification (finanční dopad, projekty, díly)
 
 3. **Jak to používáme:**
    - 4 business capabilities: Mapping, Crisis, SPOF, Early Warning
-   - Databricks Delta Lake (DAP standard)
+   - DAP (Bronze/Silver/Gold layers)
    - Multi-layer access: SQL, API, Power BI
 
 ### **Visual:**
@@ -36,7 +36,7 @@ TierIndex Foundation
       ↓
    4 Capabilities
       ↓
-   Business Value (9.6M EUR/year ROI)
+   Business Value (významné úspory a risk mitigation)
 ```
 
 ---
@@ -47,21 +47,20 @@ TierIndex Foundation
 > **4 reálné business scenarios kde TierIndex mění hru**
 
 ### **Table:**
-| Use Case               | Před TierIndex     | S TierIndex     | Time Saved |
-| ---------------------- | ------------------ | --------------- | ---------- |
-| **HS Code Compliance** | 2-3 týdny manuálně | <30 sekund      | -99%       |
-| **Crisis Impact**      | 1-2 dny Excel      | <4 minuty       | -98%       |
-| **SPOF Detection**     | Nelze zjistit      | <2 minuty       | N/A        |
-| **Early Warning**      | Reaktivní pouze    | 3-month horizon | N/A        |
+| Use Case               | Před TierIndex         | Cílový TierIndex   | Time Saved         |
+| ---------------------- | ---------------------- | ------------------ | ------------------ |
+| **HS Code Compliance** | Několik týdnů manuálně | Sekundy            | Dramatické snížení |
+| **Crisis Impact**      | Několik dní Excel      | Minuty             | Řádově             |
+| **SPOF Detection**     | Nelze zjistit          | Minuty             | N/A                |
+| **Early Warning**      | Reaktivní pouze        | Dlouhodobý horizon | N/A                |
 
 ### **Call-out box:**
 ```
-Hamburg Port Blockage Example:
-  → 3 Tier-1 affected
-  → 8 Tier-2 dependencies mapped
-  → 10 projects at risk
-  → 25.8M EUR exposure
-  → Time to insight: <5 minut
+Model Scenario: Critical Infrastructure Disruption
+  → dotknutí Tier-1 dodavatelé označeni rychle
+  → mapovaný Tier-2/3 kontext s riziky (SPOF, cluster, lock-in)
+  → projekty, díly a mitigace v jednom reportu
+  → Time to insight: near real-time místo dní
 ```
 
 ---
@@ -76,12 +75,12 @@ Hamburg Port Blockage Example:
 #### **1. HS Codes**
 - 6-digit commodity classification
 - Trade data, celní úřady
-- **Example:** `8708.29` = Brzdové komponenty
+- **Example:** `XXXX.XX` = Kritické komponenty
 
 #### **2. WGR (Warengruppe)**
 - Škoda Auto commodity taxonomy
 - Business procesy, sourcing
-- **Example:** `WGR-3400` = Elektrika
+- **Example:** `WGR-XXXX` = Commodity group
 
 #### **3. BOM (Bill of Materials)**
 - Part hierarchies ve vozidlech
@@ -130,7 +129,7 @@ Hamburg Port Blockage Example:
 ## 📊 Slide 5: Architecture Overview
 
 ### **Headline:**
-> **Databricks Medallion: Bronze → Silver → Gold**
+> **DAP Medallion Architecture: Bronze → Silver → Gold**
 
 ### **Diagram:**
 ```mermaid
@@ -183,28 +182,28 @@ graph LR
 ```
 1. Mapping & Verification (FOUNDATION)
    ✓ N-tier visibility
-   ✓ Hamburg scenario: <5 min analysis
+   ✓ Disruption scenario: near real-time analysis
    ✓ Data: Tier mappings, HS codes, BOM
 
       ↓
 
 2. SPOF Detection (ANALYTICAL)
    ✓ Proactive risk identification
-   ✓ ChipManufacturing: CRITICAL SPOF
+   ✓ Anonymní Tier-2: označen jako CRITICAL SPOF
    ✓ Data: Graph centrality, alternatives
 
       ↓
 
 3. Crisis Impact Analysis (REACTIVE)
    ✓ Real-time cascade
-   ✓ ElectroComponents bankrupt: 4 min response
+   ✓ Insolvence Tier-1: reakce do 4 minut
    ✓ Data: Project mappings, propagation
 
       ↓
 
 4. Early Warning (PROACTIVE)
-   ✓ 3-month prediction horizon
-   ✓ 82% confidence alerts
+   ✓ Dlouhodobý prediction horizon
+   ✓ alerts s vysokou důvěrou
    ✓ Data: DnB trends, SAP payment behavior
 ```
 
@@ -220,9 +219,9 @@ graph LR
 | -------------------- | ------------------------------- | ------------------------------- |
 | **Bronze Ownership** | Reference external              | Avoid duplication, cost savings |
 | **Update Strategy**  | Monthly baseline + daily deltas | Balance freshness vs cost       |
-| **Storage**          | Databricks Delta Lake           | DAP standard, Unity Catalog     |
+| **Storage**          | DAP (Bronze/Silver/Gold)        | DAP standard, metadata catalog  |
 | **Access Patterns**  | SQL + API + Power BI            | Flexibility for all users       |
-| **Governance**       | Unity Catalog                   | Built-in lineage, RBAC          |
+| **Governance**       | DAP Catalog                     | Built-in lineage, RBAC          |
 
 ### **Call-out:**
 ```
@@ -246,7 +245,7 @@ TierIndex (Data Platform)
       ↓
    ┌────────────────────────────────┐
    │  Collibra (Data Quality)       │
-   │  Unity Catalog (Lineage)       │
+   │  DAP Catalog (Lineage)         │
    │  DAP Gold (SAP Business Data)  │
    └────────────────────────────────┘
       ↓
@@ -256,18 +255,18 @@ TierIndex (Data Platform)
 ### **MCOP Role:**
 - 🔄 Orchestrates queries mezi TierIndex a metadata systems
 - 📊 Enriches data s quality scores (Collibra)
-- ✅ Validates transformations (Unity Catalog lineage)
-- 🔍 Logs všechny kroky (audit trail)
+- ✅ Validates transformations (DAP Catalog lineage)
+- 🔍 Loguje všechny kroky (audit trail)
 
 ### **Example:**
 ```
-Query: "Hamburg port blocked - impact?"
-  → MCOP orchestrates:
-     1. TierIndex: Which Tier-1 use Hamburg?
-     2. Collibra: Data quality scores?
-     3. Unity Catalog: Which HS codes?
-     4. DAP: Annual volumes?
-  → Result: Complete risk report
+Query: "Které projekty ohrozí uzavření kritického přístavu?"
+  → MCOP orchestruje:
+     1. TierIndex: Kteří Tier-1 používají daný uzel?
+     2. Collibra: Jaká je kvalita a čerstvé dat?
+     3. DAP Catalog: Jaké HS/WGR kódy a lineage?
+     4. DAP: Jaké jsou objemy / kontrakty v SAP?
+  → Výsledek: Kompletní rizikový report během minut
 ```
 
 ---
@@ -275,32 +274,27 @@ Query: "Hamburg port blocked - impact?"
 ## 📊 Slide 9: Business Value & ROI
 
 ### **Headline:**
-> **9.6M EUR/year net benefit**
+> **Významné dlouhodobé ROI**
 
-### **Breakdown:**
+### **Breakdown (řádově):**
 ```
-Annual Benefits:
-  ✅ Avoided production losses: 8.5M EUR
-  ✅ Reduced expedited shipping: 2.1M EUR
-  ✅ Early penalty avoidance: 800K EUR
-  ─────────────────────────────────────
-  Total Benefits: 11.4M EUR/year
+Benefit buckets:
+  ✅ Vyhnuté výpadky výroby (největší položka)
+  ✅ Méně expedited shippingu a penále
+  ✅ Lepší smluvní podmínky díky transparentním datům
 
-Annual Costs:
-  ⚠️ Sayari API + Bulk Data: 800K EUR
-  ⚠️ DnB API subscriptions: 400K EUR
-  ⚠️ Databricks compute + storage: 600K EUR
-  ─────────────────────────────────────
-  Total Costs: 1.8M EUR/year
+Cost buckets:
+  ⚠️ Data subscriptions (Sayari, DnB, další)
+  ⚠️ DAP compute + storage
+  ⚠️ Tým na orchestraci a governance
 
-─────────────────────────────────────
-NET BENEFIT: 9.6M EUR/year
+Výsledek: Benefit >> Cost
 ```
 
 ### **Time Savings:**
-- Crisis analysis: 1-2 days → <4 min (**-98%**)
-- Compliance checks: 2-3 weeks → <30 sec (**-99%**)
-- SPOF detection: Impossible → <2 min (**NEW capability**)
+- Crisis analysis: Několik dní → Minuty (**Řádově**)
+- Compliance checks: Několik týdnů → Sekundy (**Dramatické snížení**)
+- SPOF detection: Impossible → Minuty (**NEW capability**)
 
 ---
 
@@ -313,24 +307,24 @@ NET BENEFIT: 9.6M EUR/year
 
 #### **Phase 1: TierIndex Foundation (Current)**
 ✅ Status: In Progress
-✅ Timeline: Q4 2025
+✅ Timeline: Foundation phase
 
 **Deliverables:**
-- Databricks Silver layer (ti_entity, ti_edge, ti_entity_risk)
+- DAP Silver layer (ti_entity, ti_edge, ti_entity_risk)
 - Monthly baseline refresh (Sayari Bulk Data)
-- Unity Catalog governance setup
+- DAP Catalog governance setup
 - 4 capabilities: Mapping, Crisis, SPOF, Early Warning (rule-based)
 
 ---
 
 #### **Phase 2: MCOP Metadata Orchestration (Next)**
 🔄 Status: Planned
-🔄 Timeline: Q1 2026
+🔄 Timeline: Orchestration phase
 
 **Deliverables:**
 - MCOP agent (LangGraph-based)
 - Collibra integration (data quality enrichment)
-- Unity Catalog lineage tracking
+- DAP Catalog lineage tracking
 - DAP Gold consumption (SAP business data)
 - Feature Store setup (historical snapshots)
 
@@ -341,7 +335,7 @@ NET BENEFIT: 9.6M EUR/year
 
 #### **Phase 3: ML-Powered Proaktivní Monitoring (Future)**
 🔮 Status: Research
-🔮 Timeline: Q2 2026
+🔮 Timeline: ML enablement phase
 
 **Deliverables:**
 - LightGBM model (supplier deterioration prediction)
@@ -350,18 +344,18 @@ NET BENEFIT: 9.6M EUR/year
 - SHAP explanations (proč model predikuje riziko?)
 - Automated retraining (monthly on new data)
 
-**Example Alert:**
+**Example Alert (anonymized):**
 ```
-🔔 AUTOMATED ALERT (3-month horizon)
+🔔 AUTOMATED ALERT (dlouhodobý horizon)
 
-Supplier: ElectroComponents GmbH
-Probability: 82% deterioration
+Supplier: Tier-1 Alpha
+Probability: vysoká pravděpodobnost zhoršení
 Evidence:
-  - Credit rating: 85 → 78 (declining)
-  - Payment delays: 23% (was 5%)
-  - Industry benchmark: -1.2 std dev
+  - Credit rating trend klesá několik měsíců po sobě
+  - Platební disciplína se zhoršuje
+  - Benchmark vůči oboru ukazuje outlier
 
-Action: Activate alternative TechComponents AG
+Action: Aktivovat předvybraného alternativního dodavatele
 ```
 
 ---
@@ -383,7 +377,7 @@ Phase 1: TierIndex Foundation
 
 Phase 2: MCOP Orchestration
   ├─ Must have: TierIndex Silver tables
-  ├─ Must have: Unity Catalog lineage
+  ├─ Must have: DAP Catalog lineage
   └─ Must have: Feature Store (snapshots)
       ↓
       Without Phase 2: No metadata context for ML
@@ -411,7 +405,7 @@ Phase 3: ML Monitoring
 #### **1. Data Orchestrator**
 ```pseudo
 // MCOP coordinates multi-source queries
-ASYNC FUNCTION analyze_hamburg_impact():
+ASYNC FUNCTION analyze_critical_node_impact():
     // Step 1: TierIndex - najdi dotčené Tier-1
     affected_tier1 = QUERY TierIndex.Entities
                      WHERE import_port = "DEHAM"
@@ -420,8 +414,8 @@ ASYNC FUNCTION analyze_hamburg_impact():
     data_quality = QUERY Collibra.QualityScores
                    FOR affected_tier1
 
-    // Step 3: Unity Catalog - získej lineage
-    hs_codes = QUERY UnityCatalog.Lineage
+    // Step 3: DAP Catalog - získej lineage
+    hs_codes = QUERY DAPCatalog.Lineage
                FOR affected_tier1
 
     // Step 4: Syntetizuj report
@@ -431,11 +425,11 @@ END FUNCTION
 
 #### **2. Metadata Enricher**
 - Přidává Collibra data quality scores
-- Trackuje Unity Catalog lineage
+- Trackuje DAP Catalog lineage
 - Validuje transformace
 
 #### **3. Audit Logger**
-- Všechny MCOP akce logované do Unity Catalog
+- Všechny MCOP akce logované do DAP Catalog
 - Full traceability (kdo, kdy, proč)
 - Compliance requirement
 
@@ -461,7 +455,7 @@ END FUNCTION
    - 🤔 Jen Gold pro business users, nebo i Silver pro analysts?
 
 4. **Cost Estimation:**
-   - 🤔 Měsíční Bulk Data refresh → jak estimovat Databricks compute?
+   - 🤔 Měsíční Bulk Data refresh → jak estimovat DAP compute?
    - 🤔 Partition pruning strategy?
 
 5. **Scalability:**
@@ -479,12 +473,12 @@ END FUNCTION
 
 #### **For DAP Team:**
 - [ ] Bronze access approval (Sayari, DnB, SAP Gold)
-- [ ] Unity Catalog workspace setup (`staging_wsp.tierindex_*`)
+- [ ] DAP Catalog workspace setup (`staging_wsp.tierindex_*`)
 - [ ] RBAC roles definition (`tierindex_reader`, `tierindex_admin`)
 
 #### **For TierIndex Team:**
 - [ ] Silver layer schema finalization
-- [ ] ETL pipeline implementation (Databricks notebooks)
+- [ ] ETL pipeline implementation (DAP notebooks)
 - [ ] Baseline refresh job scheduling (monthly)
 
 #### **For Business:**
@@ -521,8 +515,8 @@ Week 9+:  Production rollout
    - Základ pro budoucí ML monitoring
 
 3. **Business Value:**
-   - 9.6M EUR/year net benefit
-   - -98% time savings (crisis response)
+   - ROI ve vyšších jednotkách milionů EUR ročně
+   - Řádové snížení času (crisis response)
    - NEW capabilities (SPOF, Early Warning)
 
 ### **Call to Action:**
@@ -548,13 +542,12 @@ A: Hybrid:
 - Gold: Týdně (pre-calculated metrics)
 
 **Q: "Kolik to stojí?"**
-A: 1.8M EUR/year (Sayari 800K, DnB 400K, Databricks 600K)
-ROI: 9.6M EUR/year net benefit
+A: Kombinace datových licencí a provozu DAP (nízké jednotky milionů EUR ročně). ROI je násobně vyšší díky vyhnutým výpadkům a menším nákladům na expedited shipping.
 
 **Q: "Kdy bude hotovo?"**
-A: Phase 1 (Foundation): Q4 2025
-Phase 2 (MCOP): Q1 2026
-Phase 3 (ML): Q2 2026
+A: Phase 1 (Foundation): Foundation phase
+Phase 2 (MCOP): Orchestration phase
+Phase 3 (ML): ML enablement phase
 
 **Q: "Kdo to bude používat?"**
 A: 3 personas:

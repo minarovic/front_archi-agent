@@ -284,6 +284,11 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
   - tool0_parser_demo.ipynb (Pattern A: OpenAI SDK)
   - tool1_ingest_demo.ipynb (Pattern B: LangChain agents)
   - tool2_structure_demo.ipynb (Pattern B: LangChain agents)
+- ✅ **Workshop Presentation Materials (2025-11-07):**
+  - TierIndex Foundation Workshop (5 documents)
+  - Praktické příklady bez SQL/Python kódu
+  - UML diagramy a pseudo-kód approach
+  - MCOP jako metadata orchestrator
 
 ### Planned (Phase 2)
 - 🔮 Online docs sync via MCP tool
@@ -298,9 +303,13 @@ python3 .claude/skills/langchain/compliance-checker/check.py --all
 - `docs_langgraph/structured_output.md` - Primary reference for Tool 0
 - `docs_langgraph/workflow_agents.md` - Agent orchestration
 - `docs_langgraph/rag.md` - RAG patterns
+- `docs_langgraph/workshop_presentation/` - TierIndex workshop materials (01-05.md)
 - `scrum/backlog/_STORY_TEMPLATE.md` - Story template
-- `/memories/scrum-skills-implementation.md` - Implementation notes
-- `/memories/azure-ai-foundry-setup.md` - Azure model configuration
+
+**Memory:**
+- `/memories/azure-ai-foundry-setup.md` - Azure model configuration (2025-11-03)
+- `/memories/workshop-terminology-translation.md` - Workshop prep context (2025-11-07)
+- `/memories/datamarts-dq-audit-2025-11-03.md` - Collibra metadata quality audit
 
 **Online:**
 - https://docs.langchain.com/mcp (via MCP tool)

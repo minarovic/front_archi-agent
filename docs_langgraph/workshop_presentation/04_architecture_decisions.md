@@ -83,7 +83,7 @@ graph LR
 
 ### **Risk Mitigation:**
 - **Fallback strategy:** Cache critical subsets in TierIndex Bronze if needed
-- **SLA requirement:** Bronze uptime > 99.5%
+- **SLA requirement:** Bronze uptime vysokou dostupnost
 - **Change notifications:** Subscribe to schema evolution alerts
 
 ---
@@ -138,19 +138,19 @@ Month 2:
   ...
 ```
 
-### **Baseline Manifest Versioning:**
+### **Baseline Manifest Versioning (template):**
 ```json
 {
-  "manifest_id": "TierIndex_baseline_v2025_11",
-  "creation_date": "2025-11-01T02:00:00Z",
+  "manifest_id": "TierIndex_baseline_v<YYYY_MM>",
+  "creation_date": "<timestamp>",
   "sources": {
-    "sayari_bulk": "goya3_2025_10_snapshot",
-    "dnb_snapshot": "2025-10-31",
-    "sap_gold": "dm_bs_purchase_2025_10_31"
+    "sayari_bulk": "<snapshot_name>",
+    "dnb_snapshot": "<yyy-mm-dd>",
+    "sap_gold": "<table_version>"
   },
-  "entity_count": 20143,
-  "edge_count": 187452,
-  "next_baseline": "2025-12-01T02:00:00Z"
+  "entity_count": <approx_supplier_count>,
+  "edge_count": <approx_relationship_count>,
+  "next_baseline": "<timestamp>"
 }
 ```
 
@@ -168,31 +168,31 @@ Month 2:
 
 ---
 
-## 3️⃣ Storage Architecture: Databricks Delta Lake
+## 3️⃣ Storage Architecture: DAP (Bronze/Silver/Gold)
 
 ### **Rozhodnutí:**
-> **Unity Catalog on Databricks Delta Lake (DAP platform).**
+> **DAP Catalog on DAP platform (Bronze/Silver/Gold layers).**
 
 ### **Rationale:**
 
-#### **Why Databricks?**
+#### **Why DAP?**
 ```
 Škoda Auto DAP standard:
   ✅ Already approved platform
-  ✅ Unity Catalog governance
-  ✅ Delta Lake performance (ACID, time travel)
+  ✅ DAP Catalog governance
+  ✅ Performance optimized (ACID, time travel)
   ✅ Compute + storage integrated
 
 Alternative considered:
   ❌ Azure SQL - not designed for large-scale analytical workloads
   ❌ Neo4j - great for graphs, but not primary storage for ETL
-  ❌ Synapse - DAP prefers Databricks
+  ❌ Synapse - DAP platform preference
 ```
 
 #### **Layer Structure:**
 
 ```
-Unity Catalog Hierarchy:
+DAP Catalog Hierarchy:
 
 catalog: staging_wsp (TierIndex workspace)
 ├─ schema: tierindex_bronze
@@ -242,12 +242,12 @@ CREATE TABLE ti_edge (
 
 ✅ **Pros:**
 - DAP compliance (no platform exceptions)
-- Built-in governance (Unity Catalog)
+- Built-in governance (DAP Catalog)
 - Cost-efficient (serverless compute)
 - Developer-friendly (SQL + Python notebooks)
 
 ⚠️ **Cons:**
-- Learning curve (Databricks specifics)
+- Learning curve (DAP specifics)
 - Vendor lock-in (but acceptable given DAP strategy)
 
 ---
@@ -277,7 +277,7 @@ graph TB
     end
 
     subgraph "Consumption Layer"
-        SQL[Direct SQL Access<br/>Databricks Notebooks]
+        SQL[Direct SQL Access<br/>DAP Notebooks]
         API[REST API<br/>FastAPI + Serverless]
         PBI[Power BI<br/>Dashboards]
     end
@@ -303,7 +303,7 @@ graph TB
 
 #### **Pattern 1: Direct SQL (Analysts)**
 ```pseudo
-// Databricks notebook přístup
+// DAP notebook přístup
 CONNECT TO TierIndex.Gold
 QUERY:
   SELECT supplier_name, spof_score, tier1_dependent_count
@@ -342,7 +342,7 @@ END FUNCTION
 #### **Pattern 3: Power BI (Business Users)**
 ```
 Power BI Desktop:
-  → Data Source: Databricks (Unity Catalog)
+  → Data Source: DAP (DAP Catalog)
   → Tables: tierindex_gold.*
   → Refresh: Daily (scheduled)
   → Dashboards: SPOF Overview, Geographic Risk, Supplier Health
@@ -364,10 +364,10 @@ Power BI Desktop:
 
 ---
 
-## 5️⃣ Governance: Unity Catalog + Metadata
+## 5️⃣ Governance: DAP Catalog + Metadata
 
 ### **Rozhodnutí:**
-> **Unity Catalog as single source of truth for metadata governance.**
+> **DAP Catalog as single source of truth for metadata governance.**
 
 ### **Rationale:**
 
@@ -381,20 +381,20 @@ DAP Compliance mandates:
   ✅ Schema versioning
 ```
 
-#### **Unity Catalog Features:**
+#### **DAP Catalog Features:**
 
 | Capability     | TierIndex Implementation                       |
 | -------------- | ---------------------------------------------- |
 | **Lineage**    | Bronze → Silver → Gold tracked automatically   |
 | **RBAC**       | Role: `tierindex_reader`, `tierindex_admin`    |
-| **Audit**      | Query logs in Unity Catalog audit table        |
+| **Audit**      | Query logs in DAP Catalog audit table          |
 | **Quality**    | Data quality checks in Silver layer validation |
-| **Versioning** | Delta Lake time travel + manifest versions     |
+| **Versioning** | Time travel + manifest versions                |
 
 ### **Metadata Catalog Structure:**
 
 ```
-Unity Catalog Metadata:
+DAP Catalog Metadata:
 
 staging_wsp.tierindex_silver.ti_entity:
   - Description: "Normalized supplier entities (Tier 1-3)"
@@ -402,15 +402,15 @@ staging_wsp.tierindex_silver.ti_entity:
   - Tags: ["procurement", "supplier", "pii"]
   - Lineage: bronze.sayari_raw → silver.ti_entity → gold.ti_spof_scores
   - Quality Metrics:
-      - Completeness: 94% (DUNS populated)
+      - Completeness: Vysoká pokrytí (DUNS populated)
       - Freshness: <24h (last update)
-      - Accuracy: 87% (data quality score)
+      - Accuracy: Vysoká přesnost (data quality score)
 ```
 
 ### **Access Control Example:**
 
 ```pseudo
-// Unity Catalog RBAC struktura
+// DAP Catalog RBAC struktura
 
 // Grant read access to procurement team
 GRANT SELECT ON ti_spof_scores TO "procurement-readers"
@@ -430,20 +430,20 @@ REVOKE ALL_PRIVILEGES ON tierindex_bronze FROM "all-users"
 - Automated lineage (no manual documentation)
 
 ⚠️ **Cons:**
-- Unity Catalog learning curve
+- DAP Catalog learning curve
 - Migration effort (if changing schemas)
 
 ---
 
 ## 🎯 Decision Summary Matrix
 
-| Decision Area        | Choice                 | Alternative Considered | Why Chosen                 |
-| -------------------- | ---------------------- | ---------------------- | -------------------------- |
-| **Bronze Ownership** | Reference external     | Own Bronze copies      | Cost + avoid duplication   |
-| **Update Strategy**  | Monthly + daily deltas | Weekly full refresh    | Balance freshness vs cost  |
-| **Storage**          | Databricks Delta Lake  | Azure SQL, Neo4j       | DAP standard + performance |
-| **Access Patterns**  | SQL + API + Power BI   | API-only               | Flexibility for users      |
-| **Governance**       | Unity Catalog          | Custom metadata        | DAP compliance             |
+| Decision Area        | Choice                   | Alternative Considered | Why Chosen                 |
+| -------------------- | ------------------------ | ---------------------- | -------------------------- |
+| **Bronze Ownership** | Reference external       | Own Bronze copies      | Cost + avoid duplication   |
+| **Update Strategy**  | Monthly + daily deltas   | Weekly full refresh    | Balance freshness vs cost  |
+| **Storage**          | DAP (Bronze/Silver/Gold) | Azure SQL, Neo4j       | DAP standard + performance |
+| **Access Patterns**  | SQL + API + Power BI     | API-only               | Flexibility for users      |
+| **Governance**       | DAP Catalog              | Custom metadata        | DAP compliance             |
 
 ---
 
@@ -459,7 +459,7 @@ Monthly baseline (consistency) + daily deltas (freshness)
 Analysts SQL, Apps API, Business Power BI → každý má co potřebuje
 
 ### **4. Governance from Day 1**
-Unity Catalog není afterthought - built-in governance
+DAP Catalog není afterthought - built-in governance
 
 ### **5. DAP Alignment = No Exceptions**
 Všechna rozhodnutí align s DAP standardy → rychlejší approval
