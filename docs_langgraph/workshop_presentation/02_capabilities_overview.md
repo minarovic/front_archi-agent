@@ -26,7 +26,7 @@ graph LR
 ### Vztah TierIndex ↔ MCOP ↔ ML
 
 - **TierIndex = CORE asset**: Datová platforma (HS, WGR, BOM, Tiers), bez které nemůže existovat intelligence
-- **MCOP = HELPER orchestrator**: Propojuje TierIndex s metadata systémy (Collibra quality, DAP Catalog lineage, SAP DAP)
+- **MCOP = HELPER orchestrator**: Propojuje TierIndex s metadata systémy (Collibra quality, DAP Catalog lineage, DAP (SAP))
 - **ML Monitoring = FUTURE layer**: Staví na MCOP Feature Store (historické snapshoty + metadata kontext)
 
 ### Klíčové poučení

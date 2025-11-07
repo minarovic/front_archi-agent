@@ -77,7 +77,7 @@
 
 ### ✅ TierIndex + Metadata Copilot Positioning
 - **TierIndex** = Core data platforma (HS codes, WGR, BOM, Tier1/2/3 mappings)
-- **Metadata Copilot (MCOP)** = Metadata orchestrátor propojující TierIndex ↔ Collibra/DAP Catalog/SAP DAP
+- **Metadata Copilot (MCOP)** = Metadata orchestrátor propojující TierIndex ↔ Collibra/DAP Catalog/DAP (SAP)
 - **Metadata Copilot role:** Pomáhá vytvořit mentální most mezi daty a jejich významem - bez něj vzniká mentální gap pro ML modely
 - **Future:** Metadata Copilot jako základ pro ML-powered proaktivní monitoring
 - Focus: TierIndex = foundation, Metadata Copilot = enrichment layer

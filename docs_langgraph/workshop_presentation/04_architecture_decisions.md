@@ -117,7 +117,7 @@ Use cases vyžadují freshness:
 Sources for deltas:
   ✅ Sayari Notifications API (risk changes)
   ✅ DnB API (daily credit score updates)
-  ✅ SAP DAP Gold (daily ETL from dm_bs_purchase)
+  ✅ DAP (SAP) Gold (daily ETL from dm_bs_purchase)
 ```
 
 ### **Implementation Pattern:**

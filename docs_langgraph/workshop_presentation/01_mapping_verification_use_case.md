@@ -18,7 +18,7 @@
 - Umožňuje 4 capabilities: Mapping, Crisis, SPOF, Early Warning (rule-based)
 
 **2. MCOP (ORCHESTRATOR) - Co přidá metadata kontext**
-- LangGraph agent spojující TierIndex ↔ Collibra ↔ DAP Catalog ↔ SAP DAP
+- LangGraph agent spojující TierIndex ↔ Collibra ↔ DAP Catalog ↔ DAP (SAP)
 - Enrichment dat o quality scores, lineage, business metadata
 - Feature Store pro historické snapshoty (základ pro ML)
 
@@ -110,9 +110,8 @@ sequenceDiagram
 **High-level orchestration:**
 1. **TierIndex seed:** Vytáhnout plný profil Tier-1 dodavatele (identifikátory, smlouvy, projekty)
 2. **External traversal:** Volat Sayari (nebo jiné zdroje) pro upstream graf do požadované hloubky a typu relací
-3. **Metadata enrichment:** Přidat HS/WGR, kvalitu dat z Collibry a auditní stopu z DAP Catalogu
-4. **BOM propagation:** Ověřit, které díly/projekty jsou dotčené, a vypočítat dopad přes strukturální závislosti
-5. **Confidence scoring:** Spojit signály do jednoho skóre, které říká, jak spolehlivý je obrázek supply chainu
+3. **BOM propagation:** Ověřit, které díly/projekty jsou dotčené, a vypočítat dopad přes strukturální závislosti
+4. **Confidence scoring:** Spojit signály do jednoho skóre, které říká, jak spolehlivý je obrázek supply chainu
 
 **Network View (obecný formát):**
 

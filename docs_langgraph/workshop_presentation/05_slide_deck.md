@@ -136,8 +136,8 @@ Model Scenario: Critical Infrastructure Disruption
 graph LR
     subgraph "Bronze (Reference)"
         SB[Sayari<br/>Bulk Data]
-        DB[DnB<br/>~500 GB]
-        SAPB[SAP DAP<br/>dm_bs]
+        DB[DnB]
+        SAPB[DAP (SAP)<br/>dm_bs]
     end
 
     subgraph "Silver (TierIndex Owned)"
@@ -160,9 +160,6 @@ graph LR
     RISK --> SPOF
     SPOF --> GEO
     SPOF --> COMM
-
-    style Silver fill:#e1f5e1
-    style Gold fill:#e1f5e1
 ```
 
 ### **Key Points:**
