@@ -1,0 +1,17 @@
+bundle:
+  name: archi-agent
+
+# Top-level workspace config applies to all targets unless overridden
+workspace:
+  host: https://adb-3454721630763958.18.azuredatabricks.net
+  # Where bundle assets (e.g., notebooks/jobs) will be uploaded in the workspace
+  root_path: /Users/minarovic@metawizards.com/.bundle/${bundle.name}/${bundle.target}
+
+# Define at least one target so the VS Code Databricks extension can set an active target
+targets:
+  dev:
+    default: true
+    # If you need per-target workspace overrides, uncomment below:
+    # workspace:
+    #   host: https://adb-3454721630763958.18.azuredatabricks.net
+    #   root_path: /Users/minarovic@metawizards.com/.bundle/${bundle.name}/${bundle.target}

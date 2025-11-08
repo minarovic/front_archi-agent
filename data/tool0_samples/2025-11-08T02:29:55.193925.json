@@ -1,0 +1,49 @@
+{
+  "project_metadata": {
+    "project_name": "Supplier Risk Insights 2.0",
+    "sponsor": "Marek Hrubý (VP Procurement Excellence)",
+    "submitted_at": "2025-10-28",
+    "extra": {
+      "department": "Group Procurement Analytics",
+      "priority": "Kritická – Q4 OKR \"Stabilizace dodavatelského řetězce\""
+    }
+  },
+  "goal": "Dodat konsolidovaný pohled na spolehlivost dodavatelů napříč BA/BS datamarťy a SAP ECC zdroji. Výsledný reporting musí upozorňovat na dodavatele s rostoucím lead time, častými reklamacemi nebo blokacemi plateb, aby procurement dokázal včas přesměrovat objem a eskalovat smluvní pokuty.",
+  "scope_in": "Historická data o purchase orders (posledních 36 měsíců) včetně RU/DE regionu; dimenze dodavatel, produkt, dodací lokace, nákupní organizace; SLA metriky: on-time delivery, defect rate, invoice dispute count; spárování se security klasifikací (Confidential vs Internal); export KPI do Power BI workspace \"Supplier Control Tower\".",
+  "scope_out": "Forecasting budoucích objednávek (řeší Supply Planning tým); integrace s CRM a risk ratingy třetích stran; real-time streaming ze SCADA nebo IoT senzorů; detailní finanční marže – používá Finance Controlling.",
+  "entities": [
+    "Supplier Master (Collibra/Unity Catalog dimv_supplier)",
+    "Purchase Order Header (factv_purchase_order)",
+    "Purchase Order Item (factv_purchase_order_item)",
+    "Quality Incident (factv_quality_notification)",
+    "Delivery Calendar Dimension (dimv_delivery_date)"
+  ],
+  "metrics": [
+    "Supplier Reliability Index (vážený mix on-time %, dispute rate, defect rate)",
+    "Average Goods Receipt Lead Time (dny)",
+    "% PO s \"blocked for payment\" statusem",
+    "NCR Count (non-conformance reports) za poslední kvartál",
+    "Spend concentration top 10 dodavatelů"
+  ],
+  "sources": [
+    "Databricks Unity Catalog: dm_ba_purchase schema",
+    "Databricks Unity Catalog: dm_bs_purchase schema",
+    "Collibra Data Catalog export (lineage a vlastníci)",
+    "SAP ECC tabulky: EKKO, EKPO, LFA1, MKPF",
+    "SharePoint složka \"Supplier Audits\" pro manuální NCR zápisy"
+  ],
+  "constraints": [
+    "GDPR: žádná osobní data supplier kontaktů v datasetu; pseudonymizace ID",
+    "Data retention: pouze 3 roky historie v produkčním modelu",
+    "Každý dashboard refresh < 5 min (jinak neprojde SLA)",
+    "Row Level Security podle regionu (EMEA, AMER, APAC)",
+    "Pouze read-only přístup do SAP; žádné zápisy zpět"
+  ],
+  "deliverables": [
+    "Kurátorované business_request.json a structure.json pro Tool 3/7",
+    "Quality report shrnující articulationScore + missingFromSource flagy",
+    "Power BI semantic model + definice DAX measures",
+    "Governance runbook popisující validace a kontakty (owner, steward)",
+    "Checklist P0/P1/P2 mitigací pro Supplier Risk komisi"
+  ]
+}
