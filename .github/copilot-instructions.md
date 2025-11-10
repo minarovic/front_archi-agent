@@ -2,8 +2,25 @@
 
 ## Project Overview
 **Name:** Metadata Copilot (MCOP)
-**Purpose:** LangGraph agent connecting business requirements with technical metadata (Collibra, Databricks Unity Catalog, SAP)
-**Current Phase:** MVP - Tool 0 (Business Request Parser)
+**Purpose:** Metadata orchestration pipeline connecting business requirements with technical metadata (Collibra, Databricks Unity Catalog, SAP)
+**Current Phase:** MVP Refactoring - Simplifying Tool 2 & 3, creating orchestrator
+**Architecture Strategy:** Progressive evolution from Simplified → Multi-Agent Orchestrator → Pydantic Graph (see AGENTS.md for full pattern guide)
+
+## MCOP Architecture Patterns
+
+### Pattern Selection Guide (2025-11-10)
+
+| Tool          | Current Pattern    | Action                | Reasoning                          | Timeline  |
+|---------------|--------------------|-----------------------|------------------------------------|-----------|
+| Tool 0        | ✅ Simplified       | Keep                  | Optimal for single-shot parsing    | Done      |
+| Tool 1        | Pydantic Graph     | ✅ Keep                | 2 LLM agents + checkpoint benefit  | Document  |
+| Tool 2        | Pydantic Graph     | ⚠️ Refactor → Simplified | Lineární flow, graph overkill     | This week |
+| Tool 3        | Pydantic Graph     | ⚠️ Refactor → Simplified | Hybrid better as function         | This week |
+| MVP Orch.     | ❌ Doesn't exist    | 🆕 Create Simplified   | Basic Tool 0→1→2→3 flow            | Next week |
+| Prod. Orch.   | ❌ Doesn't exist    | 📅 Create Multi-Agent  | Error recovery + delegation        | Q1 2026   |
+| Adv. Graph    | ❌ Doesn't exist    | 📅 Consider            | Conditional branching + parallel   | Q2 2026+  |
+
+**Reference:** `docs_langgraph/pydantic_analysis/graph_vs_multiagent_mcop.md` for comprehensive analysis, 3 Mermaid diagrams, and decision matrix.
 
 ## Architecture Principles
 
@@ -37,10 +54,7 @@ type: story | epic | task
 status: planned | in-progress | done | blocked
 priority: must-have | should-have | could-have | wont-have
 updated: YYYY-MM-DD
-skill_implementation: "path/to/skill.py" | null
-skill_status: "ready_to_execute" | "needs_design" | "manual_only"
-skill_time_saved: "estimate" | null
-skill_created: true | false
+
 ---
 ```
 
@@ -58,100 +72,81 @@ skill_created: true | false
 - Output saved to `scrum/artifacts/YYYY-MM-DD_<skill-name>.json`
 - README with usage instructions created
 
-## LangChain/LangGraph Best Practices
+## Pydantic AI Best Practices (PREFERRED)
 
-### Required Patterns
-1. **Structured Output:** Always use explicit strategy
-   ```python
-   from langchain.agents import create_agent
-   from langchain.agents.structured_output import ToolStrategy
-   from langchain_openai import AzureChatOpenAI
+### Phase 1: Simplified Pattern (Current - Tool 0, 2, 3, MVP Orchestrator)
+```python
+from openai import OpenAI
+from pydantic import BaseModel, Field
 
-   # ✅ CORRECT (Azure AI Foundry)
-   AZURE_LLM = AzureChatOpenAI(
-       azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-       api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-       azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-       api_version="2024-10-21"
-   )
-   agent = create_agent(
-       model=AZURE_LLM,
-       response_format=ToolStrategy(MySchema)
-   )
+class ParsedRequest(BaseModel):
+    """Model description."""
+    field: str = Field(description="Field description")
 
-   # ❌ INCORRECT - deprecated (passing schema directly)
-   agent = create_agent(
-       model=AZURE_LLM,
-       response_format=MySchema  # Don't pass schema directly
-   )
-   ```
+client = OpenAI(
+    base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY")
+)
 
-2. **Pydantic Models:** Always include Field descriptions
-   ```python
-   from pydantic import BaseModel, Field
+response = client.chat.completions.create(
+    model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    response_format={"type": "json_object"},
+    messages=[{"role": "user", "content": prompt}]
+)
 
-   class MyModel(BaseModel):
-       """Model description."""
-       field: str = Field(description="Field description")
-   ```
+result = ParsedRequest.model_validate_json(response.choices[0].message.content)
+```
 
-3. **Import Paths:** Use current LangChain v1 imports
-   ```python
-   # ✅ CORRECT
-   from langchain.agents import create_agent
-   from langchain.agents.structured_output import ToolStrategy, ProviderStrategy
+### Phase 2: Multi-Agent Orchestrator (Q1 2026)
+```python
+from pydantic_ai import Agent
 
-   # ❌ DEPRECATED
-   from langchain.prebuilt import create_react_agent
-   ```
+orchestrator = Agent('gpt-5-mini', instructions='Coordinate MCOP pipeline')
 
-### Validation Before Commit
-Always run compliance checker before committing LangChain code:
+@orchestrator.tool
+async def parse_business_request(ctx, document: str) -> dict:
+    """Delegate to Tool 0."""
+    return await tool0_agent.run(document, usage=ctx.usage)
+```
+
+### Phase 3: Pydantic Graph (Q2 2026+)
+```python
+from pydantic_graph import Graph, BaseNode, GraphRunContext, End
+
+@dataclass
+class ValidateQuality(BaseNode[MCOPState]):
+    async def run(self, ctx: GraphRunContext[MCOPState]) -> RerunMapping | EnrichSecurity | End:
+        if ctx.state.quality_score < 0.7:
+            return RerunMapping()  # Loop back to Tool 1
+        elif ctx.state.risk_level == "HIGH":
+            return EnrichSecurity()  # Parallel Tool 4+5+6
+        else:
+            return End()
+```
+
+## LangChain (LEGACY - Tool 1 maintenance only)
+
+**Only use for Tool 1 existing implementation:**
+```python
+from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
+from langchain_openai import AzureChatOpenAI
+
+AZURE_LLM = AzureChatOpenAI(
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
+    api_version="2024-10-21"
+)
+agent = create_agent(model=AZURE_LLM, response_format=ToolStrategy(MySchema))
+```
+
+**Validation (if modifying Tool 1):**
 ```bash
 python3 .claude/skills/langchain/compliance-checker/check.py --file <path>
 ```
 
-## Available Skills
 
-### 1. Backlog Validator
-**Purpose:** Validates frontmatter in scrum/backlog/*.md files
-**Usage:** `python3 .claude/skills/scrum/backlog-validator/validate.py`
-**Output:** `scrum/artifacts/YYYY-MM-DD_backlog-validation.json`
-
-### 2. LangChain Compliance Checker
-**Purpose:** Validates Python code against LangChain/LangGraph documentation
-**Usage:**
-```bash
-python3 .claude/skills/langchain/compliance-checker/check.py --file src/tool0/parser.py
-python3 .claude/skills/langchain/compliance-checker/check.py --dir src/
-python3 .claude/skills/langchain/compliance-checker/check.py --all
-```
-**Output:** `scrum/artifacts/YYYY-MM-DD_langchain-compliance.json`
-
-## Code Generation Guidelines
-
-### When Creating New Stories
-1. Use template: `scrum/backlog/_STORY_TEMPLATE.md`
-2. Include all required frontmatter fields
-3. Add skill metadata if applicable
-4. Define clear acceptance criteria
-
-### When Implementing Skills
-1. Create directory: `.claude/skills/<category>/<skill-name>/`
-2. Required files:
-   - `SKILL.md` - Metadata (name, description, version, owner, dependencies)
-   - `<skill-name>.py` - Implementation
-   - `README.md` - Usage documentation
-3. Follow naming: lowercase-hyphen format
-4. Output to: `scrum/artifacts/`
-
-### When Implementing LangChain Code
-1. Check `docs_langgraph/` for patterns first
-2. Use explicit ToolStrategy/ProviderStrategy
-3. Add Field descriptions to all Pydantic models
-4. Include docstrings on models and functions
-5. Run compliance checker before commit
-6. Handle errors appropriately (no bare try/except)
 
 ## Tool 0 (Business Request Parser) Specifics
 

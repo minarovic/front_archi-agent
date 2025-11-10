@@ -18,11 +18,7 @@ import time
 from typing import Dict
 
 from databricks.sdk import WorkspaceClient
-from databricks.sdk.service.jobs import (
-    NotebookTask,
-    Task,
-    JobTaskSettings,
-)
+from databricks.sdk.service.jobs import NotebookTask, SubmitTask
 
 
 def kv_list_to_dict(pairs: list[str]) -> Dict[str, str]:
@@ -41,52 +37,21 @@ def submit_once(
     cluster_id: str,
     base_parameters: Dict[str, str],
 ):
-    """Submit a one-time run. Prefer Jobs 'submit' API when available; otherwise fallback to create+run_now."""
-    # Try modern submit-one-time run first
-    try:
-        from databricks.sdk.service.jobs import (
-            RunSubmitTaskSettings,
-            TaskDependancy,
-        )
-
-        submit_resp = w.jobs.submit(
-            tasks=[
-                RunSubmitTaskSettings(
-                    task_key="run_notebook",
-                    existing_cluster_id=cluster_id,
-                    notebook_task=NotebookTask(
-                        notebook_path=notebook_path,
-                        base_parameters=base_parameters or None,
-                    ),
-                )
-            ]
-        )
-        return submit_resp.run_id
-    except Exception as e:
-        # Fallback path: create a temporary job, run it, then delete
-        print(
-            f"jobs.submit not available or failed ({e}); falling back to create+run_now ..."
-        )
-        # Build proper JobTaskSettings object
-        task_settings = JobTaskSettings(
-            task_key="run_notebook",
-            existing_cluster_id=cluster_id,
-            notebook_task=NotebookTask(
-                notebook_path=notebook_path,
-                base_parameters=base_parameters or None,
-            ),
-        )
-        job = w.jobs.create(
-            name=f"one_time_{int(time.time())}",
-            tasks=[task_settings],
-        )
-        run = w.jobs.run_now(job_id=job.job_id, task_key="run_notebook")
-        # best-effort cleanup later
-        try:
-            w.jobs.delete(job_id=job.job_id)
-        except Exception:
-            pass
-        return run.run_id
+    """Submit a one-time notebook run using jobs.submit API."""
+    submit_resp = w.jobs.submit(
+        run_name=f"ad_hoc_{int(time.time())}",
+        tasks=[
+            SubmitTask(
+                task_key="run_notebook",
+                existing_cluster_id=cluster_id,
+                notebook_task=NotebookTask(
+                    notebook_path=notebook_path,
+                    base_parameters=base_parameters or None,
+                ),
+            )
+        ],
+    )
+    return submit_resp.run_id
 
 
 def wait_for_run(w: WorkspaceClient, run_id: int, poll_seconds: int = 5) -> str:
