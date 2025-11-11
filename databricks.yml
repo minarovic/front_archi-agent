@@ -8,6 +8,17 @@ workspace:
   root_path: /Users/minarovic@metawizards.com/.bundle/${bundle.name}/${bundle.target}
 
 # Define at least one target so the VS Code Databricks extension can set an active target
+resources:
+  jobs:
+    tool0_parser_databricks:
+      name: "[${bundle.target}] Tool 0 Parser"
+      tasks:
+        - task_key: parse_business_request
+          notebook_task:
+            notebook_path: ./notebooks/databricks/tool0_parser_databricks.ipynb
+            source: WORKSPACE
+          existing_cluster_id: 1107-223945-fh9vy8xe
+
 targets:
   dev:
     default: true

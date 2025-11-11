@@ -25,8 +25,8 @@
 # COMMAND ----------
 
 # Install all required packages with pinned versions for reproducibility
-# Using openai>=1.40.0 for Databricks proxy compatibility
-%pip install openai>=1.40.0 pydantic==2.8.2 python-dotenv==1.0.1 mlflow==2.12.1
+# Using --upgrade to force newer versions over cluster-installed packages
+%pip install --upgrade openai==1.54.0 pydantic==2.8.2 python-dotenv==1.0.1 mlflow==2.12.1
 
 # COMMAND ----------
 
@@ -95,6 +95,21 @@ print("✅ Schemas defined successfully")
 
 # MAGIC %md
 # MAGIC ## 4. Load Azure Configuration from Secrets
+# MAGIC
+# MAGIC **Setup Instructions:**
+# MAGIC ```bash
+# MAGIC # Create secret scope (run once in Databricks CLI or UI)
+# MAGIC databricks secrets create-scope --scope mcop
+# MAGIC
+# MAGIC # Add Azure OpenAI credentials
+# MAGIC databricks secrets put --scope mcop --key azure-openai-endpoint
+# MAGIC databricks secrets put --scope mcop --key azure-openai-api-key
+# MAGIC databricks secrets put --scope mcop --key azure-openai-deployment-name
+# MAGIC ```
+# MAGIC
+# MAGIC **Expected values:**
+# MAGIC - `azure-openai-endpoint`: https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
+# MAGIC - `azure-openai-deployment-name`: test-gpt-5-mini
 
 # COMMAND ----------
 
@@ -197,53 +212,114 @@ print("...")
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 6. Parse Document Using Azure OpenAI
+# MAGIC ## 3. Parse Document Using Azure OpenAI
 
 # COMMAND ----------
 
-# Parse the business document using Azure OpenAI
-from openai import OpenAI
+# Parse the business document using Azure OpenAI SDK
+from openai import AzureOpenAI
 
 print(f"🔄 Parsing document with Azure OpenAI ({DEPLOYMENT_NAME})...")
 
-SYSTEM_PROMPT = """You are a business requirements parser. Your task is to extract structured information
-from mixed-language (Czech/English) business request documents. Extract fields like project name, sponsor,
-goal, scope, entities, metrics, sources, constraints, and deliverables into JSON."""
+# System prompt for parsing
+SYSTEM_PROMPT = """You are a business requirements parser. Your task is to extract structured information from business request documents.
 
-client = OpenAI(
+Documents may contain a mix of Czech and English. Common section headers include:
+- "Projekt" / "Project" - project metadata (name, sponsor, date)
+- "Cíl" / "Goal" - main project objective
+- "Rozsah" / "Scope" - what is in/out of scope
+- "Klíčové entity & metriky" / "Key entities & metrics" - business entities and KPIs
+- "Očekávané zdroje" / "Expected sources" - data sources
+- "Omezení" / "Constraints" - limitations and requirements
+- "Požadované artefakty" / "Required artifacts" - deliverables
+
+IMPORTANT INSTRUCTIONS:
+1. Extract information into the structured JSON format exactly as specified
+2. Use "unknown" for any missing sections
+3. Ensure dates are in ISO 8601 format (YYYY-MM-DD)
+4. Extract lists as arrays of strings, not concatenated text
+5. For project metadata, look for project name, sponsor name, and submission date
+6. Any additional metadata fields should go into the "extra" dictionary
+7. Be thorough - extract all relevant information from the document
+8. Return ONLY valid JSON, no markdown or code blocks
+
+Expected JSON schema:
+{
+  "project_metadata": {
+    "project_name": "string",
+    "sponsor": "string",
+    "submitted_at": "YYYY-MM-DD",
+    "extra": {}
+  },
+  "goal": "string",
+  "scope_in": "string",
+  "scope_out": "string",
+  "entities": [],
+  "metrics": [],
+  "sources": [],
+  "constraints": [],
+  "deliverables": []
+}
+"""
+
+# Create Azure OpenAI client (official SDK pattern)
+# Remove /openai/v1/ from endpoint - AzureOpenAI adds it automatically
+azure_endpoint = AZURE_ENDPOINT.replace("/openai/v1/", "").replace("/openai/v1", "").rstrip("/")
+
+client = AzureOpenAI(
+    azure_endpoint=azure_endpoint,
     api_key=AZURE_API_KEY,
-    base_url=AZURE_ENDPOINT
+    api_version="2024-10-21"
 )
 
-user_message = f"Parse the following business request document:\n\n{business_document}\n\nReturn valid JSON."
+# Prepare user message
+user_message = f"""Parse the following business request document:
 
-prompt_used = f"System:\n{SYSTEM_PROMPT}\n\nUser:\n{user_message}"
+{business_document}
 
+Extract all information into the structured JSON format."""
+
+# Call model with JSON mode
 response = client.chat.completions.create(
     model=DEPLOYMENT_NAME,
     messages=[
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user_message},
+        {"role": "user", "content": user_message}
     ],
-    response_format={"type": "json_object"},
+    response_format={"type": "json_object"}
 )
 
+# Extract and parse JSON response
 raw_response = response.choices[0].message.content
 
 try:
     parsed_json = json.loads(raw_response)
+
+    # Validate against Pydantic model
+    validated = BusinessRequest(**parsed_json)
+    parsed_json = validated.model_dump()
+
     print("✅ Parsing complete!")
     print(f"   Model: {response.model}")
-    print(f"   Tokens used: {response.usage.total_tokens}")
+    print(f"   Tokens: {response.usage.total_tokens}")
+    print(f"   Validation: ✅ Passed")
+
 except json.JSONDecodeError as e:
     print(f"❌ JSON parsing error: {e}")
-    print("Raw response:")
-    print(raw_response)
+    print(f"Raw response: {raw_response}")
+    raise
+except Exception as e:
+    print(f"❌ Validation error: {e}")
+    print(f"Parsed JSON: {parsed_json}")
+    raise
+
+# Full prompt for audit
+prompt_used = f"System: {SYSTEM_PROMPT}\n\nUser: {user_message}"
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 7. Display Parsed JSON
+# MAGIC ## 4. Display Parsed JSON
 
 # COMMAND ----------
 
@@ -268,15 +344,13 @@ except Exception as e:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 8. Save Results to DBFS
+# MAGIC ## 5. Save Results to DBFS
+# MAGIC
+# MAGIC Save to `/dbfs/FileStore/mcop/tool0_samples/` for persistence.
 
 # COMMAND ----------
 
 # Save results to DBFS
-from datetime import datetime
-from pathlib import Path
-import json
-
 timestamp = datetime.now().isoformat().replace(':', '-')  # DBFS-safe filename
 output_dir = Path('/dbfs/FileStore/mcop/tool0_samples')
 output_dir.mkdir(parents=True, exist_ok=True)
@@ -294,14 +368,16 @@ with open(md_path, 'w', encoding='utf-8') as f:
     f.write(f"## Raw Response\n\n```\n{raw_response}\n```\n\n")
     f.write(f"## Parsed JSON\n\n```json\n{json.dumps(parsed_json, indent=2, ensure_ascii=False)}\n```\n")
 
-print(f"💾 Results saved:")
+print(f"💾 Results saved to DBFS:")
 print(f"   JSON: {json_path}")
 print(f"   Markdown: {md_path}")
+print(f"\n📂 View files in Databricks:")
+print(f"   dbfs:/FileStore/mcop/tool0_samples/")
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## 9. Summary
+# MAGIC ## 6. Summary
 # MAGIC
 # MAGIC ✅ **Databricks Deployment Complete:**
 # MAGIC - [x] Azure OpenAI credentials from Databricks secrets (scope: `mcop`)
@@ -311,15 +387,21 @@ print(f"   Markdown: {md_path}")
 # MAGIC - [x] Pydantic validation after parsing
 # MAGIC - [x] Results saved to DBFS (`/dbfs/FileStore/mcop/tool0_samples/`)
 # MAGIC
-# MAGIC **Key Configuration:**
-# MAGIC - **Endpoint:** Both `.cognitiveservices.azure.com` AND `.openai.azure.com` are valid per Azure documentation
-# MAGIC - **Current:** https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
+# MAGIC **Databricks-Specific Changes:**
+# MAGIC - ✅ `dbutils.secrets.get()` instead of `.env` file
+# MAGIC - ✅ `/dbfs/FileStore/` paths instead of local `data/` directory
+# MAGIC - ✅ `%pip install` cell for package installation
+# MAGIC - ✅ `dbutils.library.restartPython()` to reload packages
+# MAGIC - ✅ DBFS-safe filenames (replaced `:` with `-` in timestamps)
+# MAGIC
+# MAGIC **Azure AI Foundry Configuration:**
+# MAGIC - **Endpoint:** https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
 # MAGIC - **Deployment:** test-gpt-5-mini
 # MAGIC - **Model:** gpt-5-mini-2025-08-07
-# MAGIC - **SDK:** openai==1.30.1 (supports both endpoint formats)
+# MAGIC - **Pattern A:** Direct OpenAI SDK with JSON mode + Pydantic validation
 # MAGIC
 # MAGIC **Next Steps:**
-# MAGIC 1. Verify files in DBFS: `dbutils.fs.ls("dbfs:/FileStore/mcop/tool0_samples/")`
-# MAGIC 2. Run Tool 1 (Entity Mapping) using Tool 0 output
-# MAGIC 3. Run Tool 2 (Structure Classification) using Tool 0 + Tool 1 outputs
-# MAGIC 4. Run Tool 3 (Quality Validation) using all previous outputs
+# MAGIC 1. Create secret scope: `databricks secrets create-scope --scope mcop`
+# MAGIC 2. Add credentials: `databricks secrets put --scope mcop --key azure-openai-endpoint`
+# MAGIC 3. Run notebook on Databricks cluster
+# MAGIC 4. Verify files in DBFS: `dbfs:/FileStore/mcop/tool0_samples/`
