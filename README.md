@@ -2,8 +2,8 @@
 
 React 19 + Vite frontend for the Metadata Copilot orchestration pipeline visualization.
 
-**Repository:** https://github.com/minarovic/front_archi-agent  
-**Backend Repository:** https://github.com/minarovic/archi-agent  
+**Repository:** https://github.com/minarovic/front_archi-agent
+**Backend Repository:** https://github.com/minarovic/archi-agent
 **Deployment:** Vercel (auto-deploy on main branch)
 
 ---
@@ -101,7 +101,7 @@ front_archi-agent/
 
 ## 📡 Backend Integration
 
-**Backend Repository:** https://github.com/minarovic/archi-agent  
+**Backend Repository:** https://github.com/minarovic/archi-agent
 **API Documentation:** See backend repo `/docs/API_CONTRACT.md`
 
 ### API Endpoints
@@ -234,9 +234,9 @@ export function ProgressBar({ step, progress, status }: ProgressBarProps) {
 
 ### Platform: Vercel
 
-**Auto-Deploy:** Enabled on main branch push  
-**Region:** us-west1  
-**Build Command:** `cd frontend && npm run build`  
+**Auto-Deploy:** Enabled on main branch push
+**Region:** us-west1
+**Build Command:** `cd frontend && npm run build`
 **Output Directory:** `frontend/dist`
 
 ### Manual Deploy
@@ -356,7 +356,7 @@ See `scrum/sprint_2/` for detailed stories.
 
 This repository was split from the monorepo on **2025-11-30**.
 
-**Frontend Repo (this):** https://github.com/minarovic/front_archi-agent  
+**Frontend Repo (this):** https://github.com/minarovic/front_archi-agent
 **Backend Repo:** https://github.com/minarovic/archi-agent
 
 Backend code was removed via `cleanup-backend.sh` script (preserved for documentation).
@@ -376,5 +376,5 @@ MIT License - See LICENSE file
 
 ---
 
-**Maintainer:** @minarovic  
+**Maintainer:** @minarovic
 **Last Updated:** 2025-11-30

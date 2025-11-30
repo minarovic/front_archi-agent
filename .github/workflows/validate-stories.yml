@@ -21,7 +21,7 @@ jobs:
       - name: Validate story metadata
         run: |
           echo "📋 Validating Scrum story structure..."
-          
+
           # Check for required frontmatter fields in story files
           for file in scrum/backlog/*.md scrum/doing/*.md scrum/done/*.md; do
             if [ -f "$file" ]; then
@@ -40,13 +40,13 @@ jobs:
               fi
             fi
           done
-          
+
           echo "✅ All stories validated"
 
       - name: Check story status consistency
         run: |
           echo "🔍 Checking story status consistency..."
-          
+
           # Stories in backlog/ should have status: backlog or planned
           for file in scrum/backlog/*.md; do
             if [ -f "$file" ]; then
@@ -56,7 +56,7 @@ jobs:
               fi
             fi
           done
-          
+
           # Stories in doing/ should have status: in-progress or doing
           for file in scrum/doing/*.md; do
             if [ -f "$file" ]; then
@@ -66,7 +66,7 @@ jobs:
               fi
             fi
           done
-          
+
           # Stories in done/ should have status: done or completed
           for file in scrum/done/*.md; do
             if [ -f "$file" ]; then
@@ -76,5 +76,5 @@ jobs:
               fi
             fi
           done
-          
+
           echo "✅ Status consistency checked"
