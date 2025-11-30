@@ -1,353 +1,462 @@
-# Metadata Copilot Backend - AI Agent Guidelines
+# Metadata Copilot Frontend - AI Agent Guidelines
 
-This document provides guidance for AI agents (Claude, GitHub Copilot, etc.) working on the **MCOP Backend** project.
+This document provides guidance for AI agents (Claude, GitHub Copilot, etc.) working on the **MCOP Frontend** project.
 
 ## Repository Context
-**This is the BACKEND repository** after monorepo split (2025-11-30).
-**Frontend repository:** https://github.com/minarovic/archi-agent-frontend
+**This is the FRONTEND repository** after monorepo split (2025-11-30).
+**Backend repository:** https://github.com/minarovic/archi-agent
 
 ## Project Mission
-Build a metadata orchestration pipeline (Python FastAPI backend) that connects business requirements with technical metadata from Collibra, Databricks Unity Catalog, and SAP.
+Build a React 19 + Vite frontend for visualizing metadata orchestration pipeline results, including ER diagrams, quality reports, and real-time progress tracking.
 
-## Architecture Evolution
+## Tech Stack
 
-- **Phase 1 (MVP - NOW):** Simplified sequential functions (Tool 0→1→2→3→7)
-- **Phase 2 (Production - Q1 2026):** Multi-agent orchestrator with error recovery
-- **Phase 3 (Advanced - Q2 2026+):** Pydantic Graph state machine with conditional branching
-
-Current focus: Sprint 2 - Tool 5 implementation, production hardening
+- **React 19** - UI framework with concurrent features
+- **TypeScript 5.3** - Type safety
+- **Vite 7.2.4** - Build tool with HMR
+- **TailwindCSS 4.1.17** - Utility-first styling
+- **Zustand** - Lightweight state management
+- **Mermaid.js 10.6.1** - ER diagram rendering
+- **Playwright 1.57.0** - E2E testing
 
 ## Core Principles
 
-### 1. API Contract as Source of Truth
-- Backend generates `src/api/openapi.json` via `generate_openapi.py`
-- Frontend consumes this schema via `npm run sync-api`
-- **ALWAYS run schema generation after API changes**
+### 1. Backend API as Single Source of Truth
+- Backend generates `src/api/openapi.json`
+- Frontend syncs via `npm run sync-api`
+- **ALWAYS sync schema after backend releases**
 
-### 2. Skills-Based Architecture
-- **Documentation (Markdown)** = Source of truth for "what" and "why"
-- **Skills (Python scripts)** = Executable automation for "how"
-- All skill outputs logged to `scrum/artifacts/`
+### 2. Component-First Architecture
+- Pages = top-level routes (HomePage, DiagramPage, HistoryPage)
+- Components = reusable UI elements (Button, Card, ProgressBar)
+- Store = Zustand for global state
+- API = Backend client functions
 
-### 3. Testing First
-- Write tests before implementation
-- 265 tests passing in Sprint 1
-- Target: 90%+ coverage for Tool modules
+### 3. Type Safety First
+- Define TypeScript interfaces for all data
+- No `any` types (use `unknown` if needed)
+- Validate API responses against types
 
-## Scrum Story Structure
-Every story in `scrum/backlog/*.md` requires:
-```yaml
----
-id: MCOP-XXX
-type: story | epic | task
-status: planned | in-progress | done | blocked
-priority: must-have | should-have | could-have | wont-have
-updated: YYYY-MM-DD
----
+## Project Structure
+```
+archi-agent-frontend/
+├── src/
+│   ├── components/          # Reusable UI components
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── ProgressBar.tsx
+│   │   └── Diagram.tsx
+│   ├── pages/               # Route components
+│   │   ├── HomePage.tsx     # Business request editor
+│   │   ├── DiagramPage.tsx  # ER diagram viewer
+│   │   └── HistoryPage.tsx  # Session history
+│   ├── store/               # Zustand state management
+│   │   └── useStore.ts
+│   ├── api/                 # Backend client
+│   │   ├── client.ts        # HTTP functions
+│   │   └── websocket.ts     # WebSocket client
+│   ├── types/               # TypeScript types
+│   │   ├── api.ts           # API request/response types
+│   │   └── state.ts         # Store types
+│   └── utils/               # Helper functions
+├── e2e/                     # Playwright E2E tests
+├── docs/
+│   ├── openapi.json         # Backend API schema (synced)
+│   ├── API_CONTRACT.md      # Human-readable API docs
+│   └── VERSION_MATRIX.md    # Compatibility matrix
+├── public/                  # Static assets
+└── package.json
 ```
 
-## MCOP Tool Architecture
+## Component Guidelines
 
-| Tool         | Pattern               | Status        | Path                                 |
-| ------------ | --------------------- | ------------- | ------------------------------------ |
-| Tool 0       | Simplified            | ✅ Done        | `src/tool0/parser.py`                |
-| Tool 1       | Pydantic Graph        | ✅ Done        | `notebooks/tool1_ingest_demo.ipynb`  |
-| Tool 2       | Simplified (refactor) | ⚠️ In Progress | `src/tool2/classifier_simplified.py` |
-| Tool 3       | Simplified (refactor) | ⚠️ In Progress | `src/tool3/validator_simplified.py`  |
-| Tool 5       | Simplified            | 📅 Sprint 2    | `src/tool5/diagram_generator.py`     |
-| Orchestrator | Simplified            | ✅ Done        | `src/orchestrator/`                  |
+### Creating New Components
+1. **Functional components only** (no class components)
+2. **TypeScript interfaces for props**
+3. **TailwindCSS for styling** (no CSS modules)
+4. **Export default + named exports**
 
-## Code Generation Rules
+Example:
+```typescript
+// src/components/ProgressBar.tsx
+import React from 'react';
 
-### Creating New Tools
-1. **Module structure:**
-   ```
-   src/tool{N}/
-   ├── __init__.py
-   ├── {tool_name}.py      # Main logic
-   ├── schemas.py          # Pydantic models
-   └── README.md           # Usage docs
-   ```
+interface ProgressBarProps {
+  step: string;
+  progress: number; // 0-1
+  status: 'running' | 'success' | 'error';
+}
 
-2. **Pydantic models:**
-   ```python
-   from pydantic import BaseModel, Field
+export function ProgressBar({ step, progress, status }: ProgressBarProps) {
+  const bgColor = {
+    running: 'bg-blue-500',
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+  }[status];
 
-   class ToolInput(BaseModel):
-       """Input schema description."""
-       field: str = Field(description="Field purpose")
+  return (
+    <div className="w-full bg-gray-200 rounded-full h-4">
+      <div
+        className={`${bgColor} h-4 rounded-full transition-all duration-300`}
+        style={{ width: `${progress * 100}%` }}
+      >
+        <span className="text-xs text-white px-2">{step}</span>
+      </div>
+    </div>
+  );
+}
 
-   class ToolOutput(BaseModel):
-       """Output schema description."""
-       result: dict = Field(description="Result structure")
-   ```
-
-3. **API endpoint:**
-   ```python
-   # src/api/main.py
-   from src.tool5.diagram_generator import generate_diagram
-   from src.tool5.schemas import DiagramRequest, DiagramResponse
-
-   @app.post("/diagram/generate", response_model=DiagramResponse)
-   async def generate_er_diagram(request: DiagramRequest):
-       """Generate Mermaid ER diagram from taxonomy."""
-       result = generate_diagram(request.taxonomy)
-       return DiagramResponse(**result)
-   ```
-
-4. **Generate schema:**
-   ```bash
-   python3 src/api/generate_openapi.py
-   git add src/api/openapi.json
-   ```
-
-### Writing Tests
-```python
-# tests/test_tool5.py
-import pytest
-from src.tool5.diagram_generator import generate_diagram
-from src.tool5.schemas import DiagramRequest
-
-def test_generate_diagram_basic():
-    """Test basic ER diagram generation."""
-    request = DiagramRequest(
-        taxonomy={
-            "gold": [{"name": "Customer", "attributes": ["id", "name"]}]
-        }
-    )
-    result = generate_diagram(request.taxonomy)
-    assert "erDiagram" in result["diagram"]
-    assert "Customer" in result["diagram"]
-
-@pytest.mark.parametrize("entity_count", [1, 10, 50])
-def test_generate_diagram_performance(entity_count):
-    """Test diagram generation scales linearly."""
-    entities = [{"name": f"Entity{i}", "attributes": ["id"]} for i in range(entity_count)]
-    request = DiagramRequest(taxonomy={"gold": entities})
-
-    import time
-    start = time.time()
-    result = generate_diagram(request.taxonomy)
-    duration = time.time() - start
-
-    assert duration < 0.1  # <100ms for 50 entities
-    assert len(result["entities"]) == entity_count
+export default ProgressBar;
 ```
 
-## Pydantic AI Patterns (PREFERRED)
+### Page Components
+```typescript
+// src/pages/HomePage.tsx
+import React, { useState } from 'react';
+import { useStore } from '../store/useStore';
+import { parseBusinessRequest, runOrchestration } from '../api/client';
 
-**For Phase 2+ (Multi-Agent Orchestrator):**
-```python
-from pydantic_ai import Agent
+export function HomePage() {
+  const [document, setDocument] = useState('');
+  const { addSession, updateProgress } = useStore();
 
-orchestrator = Agent('gpt-5-mini', instructions='Coordinate MCOP pipeline')
+  const handleOrchestration = async () => {
+    const result = await runOrchestration(document, 'https://collibra.example.com');
+    addSession(result.session);
+  };
 
-@orchestrator.tool
-async def parse_business_request(ctx, document: str) -> dict:
-    """Parse business document using Tool 0."""
-    return await tool0_agent.run(document, usage=ctx.usage)
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Business Request</h1>
+      <textarea
+        value={document}
+        onChange={(e) => setDocument(e.target.value)}
+        className="w-full h-64 border rounded p-2"
+        placeholder="# Project: ..."
+      />
+      <button
+        onClick={handleOrchestration}
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >
+        Run Orchestration
+      </button>
+    </div>
+  );
+}
 
-@orchestrator.tool
-async def map_entities(ctx, parsed: dict) -> dict:
-    """Map entities using Tool 1."""
-    return await tool1_agent.run(parsed, usage=ctx.usage)
+export default HomePage;
 ```
 
-**For Phase 3 (Pydantic Graph State Machine):**
-```python
-from pydantic_graph import Graph, BaseNode, GraphRunContext, End
+## State Management (Zustand)
 
-@dataclass
-class ValidateQuality(BaseNode[MCOPState]):
-    async def run(self, ctx: GraphRunContext[MCOPState]) -> RerunMapping | EnrichSecurity | End:
-        if ctx.state.quality_score < 0.7:
-            return RerunMapping()  # Loop back
-        elif ctx.state.risk_level == "HIGH":
-            return EnrichSecurity()  # Parallel Tool 4+5+6
-        else:
-            return End()
+### Store Definition
+```typescript
+// src/store/useStore.ts
+import create from 'zustand';
+import { Session, OrchestrationProgress } from '../types/state';
+
+interface MCOPState {
+  sessions: Session[];
+  currentSession: Session | null;
+  orchestrationProgress: OrchestrationProgress | null;
+
+  // Actions
+  addSession: (session: Session) => void;
+  setCurrentSession: (session: Session | null) => void;
+  updateProgress: (progress: OrchestrationProgress) => void;
+  clearProgress: () => void;
+}
+
+export const useStore = create<MCOPState>((set) => ({
+  sessions: [],
+  currentSession: null,
+  orchestrationProgress: null,
+
+  addSession: (session) =>
+    set((state) => ({ sessions: [...state.sessions, session] })),
+
+  setCurrentSession: (session) =>
+    set({ currentSession: session }),
+
+  updateProgress: (progress) =>
+    set({ orchestrationProgress: progress }),
+
+  clearProgress: () =>
+    set({ orchestrationProgress: null }),
+}));
 ```
 
-### LangChain (LEGACY - Tool 1 only)
+### Usage in Components
+```typescript
+import { useStore } from '../store/useStore';
 
-**Only use for Tool 1 maintenance:**
-```python
-from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
-from langchain_openai import AzureChatOpenAI
+function MyComponent() {
+  const sessions = useStore((state) => state.sessions);
+  const addSession = useStore((state) => state.addSession);
 
-AZURE_LLM = AzureChatOpenAI(
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-    api_version="2024-10-21"
-)
-agent = create_agent(
-    model=AZURE_LLM,
-    response_format=ToolStrategy(MySchema)
-)
+  // Use sessions and addSession
+}
 ```
 
+## API Integration
 
+### HTTP Client
+```typescript
+// src/api/client.ts
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-## Python Environment
+export async function parseBusinessRequest(document: string) {
+  const response = await fetch(`${API_URL}/parse/business-request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ document }),
+  });
 
-**Version:** Python 3.13
-**Package Manager:** pip + venv
-**Key Dependencies:**
-- fastapi>=0.104.0
-- uvicorn[standard]>=0.24.0
-- pydantic>=2.5.0
-- pydantic-ai>=0.0.13
-- openai>=1.0.0
-- python-dotenv>=1.0.0
-- pytest>=7.4.0
-- httpx>=0.25.0
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+  }
 
-## Azure AI Foundry Configuration
+  return response.json();
+}
 
-**Model:** gpt-5-mini-2025-08-07
-**Deployment:** test-gpt-5-mini
-**Region:** Sweden Central
+export async function runOrchestration(document: string, collibra_url: string) {
+  const response = await fetch(`${API_URL}/orchestrate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ document, collibra_url }),
+  });
 
-**Environment Setup (.env):**
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+  }
+
+  return response.json();
+}
+```
+
+### WebSocket Client
+```typescript
+// src/api/websocket.ts
+import { useStore } from '../store/useStore';
+
+const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+
+let ws: WebSocket | null = null;
+
+export function connectWebSocket() {
+  ws = new WebSocket(`${WS_URL}/ws/orchestrate`);
+
+  ws.onopen = () => {
+    console.log('WebSocket connected');
+  };
+
+  ws.onmessage = (event) => {
+    const progress = JSON.parse(event.data);
+    useStore.getState().updateProgress(progress);
+  };
+
+  ws.onerror = (error) => {
+    console.error('WebSocket error:', error);
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket disconnected');
+  };
+}
+
+export function disconnectWebSocket() {
+  if (ws) {
+    ws.close();
+    ws = null;
+  }
+}
+```
+
+## Testing (Playwright)
+
+### E2E Test Structure
+```typescript
+// e2e/orchestration.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Orchestration Workflow', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('http://localhost:5173');
+  });
+
+  test('should parse business request', async ({ page }) => {
+    // Enter document
+    await page.fill('textarea', '# Project: Test\n## Goal\nTest goal');
+
+    // Click parse
+    await page.click('button:text("Parse Request")');
+
+    // Verify result
+    await expect(page.locator('.parsed-result')).toBeVisible();
+    await expect(page.locator('.parsed-result')).toContainText('Test');
+  });
+
+  test('should run full orchestration', async ({ page }) => {
+    // Enter document
+    await page.fill('textarea', '# Project: Test\n...');
+
+    // Run orchestration
+    await page.click('button:text("Run Orchestration")');
+
+    // Wait for progress
+    await expect(page.locator('.progress-bar')).toBeVisible();
+
+    // Wait for completion
+    await expect(page.locator('.progress-bar')).toHaveAttribute('data-status', 'success', { timeout: 30000 });
+
+    // Navigate to diagram
+    await page.click('a[href="/diagram"]');
+    await expect(page.locator('.mermaid')).toBeVisible();
+  });
+});
+```
+
+### Running Tests
 ```bash
-AZURE_OPENAI_ENDPOINT=https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
-AZURE_OPENAI_API_KEY=<your-key>
-AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
-COLLIBRA_API_URL=https://your-instance.collibra.com
-COLLIBRA_API_KEY=<your-collibra-key>
+# All tests
+npm test
+
+# Specific browser
+npx playwright test --project=chromium
+
+# Debug mode
+npx playwright test --debug
+
+# UI mode
+npx playwright test --ui
 ```
 
-**Usage Pattern (Simplified):**
-```python
-from openai import OpenAI
-from dotenv import load_dotenv
+## Styling (TailwindCSS)
 
-load_dotenv()
-client = OpenAI(
-    base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY")
-)
+### Configuration
+```javascript
+// tailwind.config.js
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        'mcop-primary': '#3b82f6',
+        'mcop-secondary': '#10b981',
+        'mcop-danger': '#ef4444',
+      },
+    },
+  },
+  plugins: [],
+};
+```
 
-response = client.chat.completions.create(
-    model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-    messages=[{"role": "user", "content": prompt}],
-    response_format={"type": "json_object"}
-)
+### Common Patterns
+```typescript
+// Button variants
+<button className="bg-mcop-primary hover:bg-blue-600 text-white px-4 py-2 rounded">
+  Primary Button
+</button>
 
-result = MySchema.model_validate_json(response.choices[0].message.content)
+<button className="bg-mcop-secondary hover:bg-green-600 text-white px-4 py-2 rounded">
+  Secondary Button
+</button>
+
+// Card
+<div className="bg-white shadow rounded-lg p-4">
+  <h2 className="text-xl font-bold mb-2">Card Title</h2>
+  <p className="text-gray-600">Card content</p>
+</div>
+
+// Grid layout
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  {items.map(item => <Card key={item.id} {...item} />)}
+</div>
 ```
 
 ## Common Mistakes to Avoid
 
-1. ❌ Forgetting to generate OpenAPI schema after API changes
-2. ❌ Not adding Field descriptions to Pydantic models
-3. ❌ Bare `try/except` without proper error logging
-4. ❌ Hardcoding API URLs (use environment variables)
-5. ❌ Skipping tests for new features
-6. ❌ Not using `.isoformat()` for datetime JSON serialization
+1. ❌ Hardcoding API URLs (use `import.meta.env.VITE_API_URL`)
+2. ❌ Not syncing API schema after backend changes (`npm run sync-api`)
+3. ❌ Using `any` type in TypeScript
+4. ❌ Inline styles instead of TailwindCSS classes
+5. ❌ Not handling loading/error states
+6. ❌ Forgetting to clean up WebSocket connections
 
 ## Pre-Commit Checklist
 
-**For any commit:**
 ```bash
-# 1. Run tests
-pytest tests/ -v
+# 1. Sync API schema (if backend updated)
+npm run sync-api
 
-# 2. Generate OpenAPI schema (if API changed)
-python3 src/api/generate_openapi.py
+# 2. Check compatibility
+npm run check-api
 
-# 3. Validate backlog (if story changed)
-python3 .claude/skills/scrum/backlog-validator/validate.py
+# 3. Type check
+npm run type-check
 
-# 4. Check LangChain compliance (if using LangChain)
-python3 .claude/skills/langchain/compliance-checker/check.py --all
-```
+# 4. Lint
+npm run lint
 
-## Deployment
+# 5. Run tests
+npm test
 
-**Platform:** Railway
-**Region:** us-west1
-**Auto-Deploy:** On main branch push
-
-**Manual Deploy:**
-```bash
-railway up
-```
-
-**Health Check:**
-```bash
-curl https://archi-agent.railway.app/health
+# 6. Build
+npm run build
 ```
 
 ## Cross-Repo Workflow
 
-### Backend Developer Makes API Change
-1. Modify endpoint in `src/api/main.py`
-2. Update Pydantic schemas
-3. Write/update tests
-4. Run: `python3 src/api/generate_openapi.py`
-5. Commit: `git add src/api/openapi.json src/api/main.py tests/`
-6. Open PR with "🔄 API Change" label
-7. After merge, tag release: `git tag v0.2.0`
-8. Create GitHub issue in frontend repo: "API Update: v0.2.0"
+### Backend Releases New API Version
+1. Backend tags release: `v0.2.0`
+2. Frontend runs: `npm run sync-api`
+3. Review: `git diff docs/openapi.json`
+4. Update types in `src/types/api.ts` if needed
+5. Update API client calls in `src/api/client.ts`
+6. Run tests: `npm test`
+7. Commit: `git add docs/openapi.json src/`
+8. Tag compatible version: `git tag v0.2.0`
 
-### Frontend Consumes API
-Frontend runs: `npm run sync-api` to download latest schema.
+### Handling Breaking Changes
+If backend bumps major version (e.g., `v1.0.0`):
+1. Review backend `CHANGELOG.md`
+2. Create migration branch
+3. Update API client for changed endpoints
+4. Update types for changed schemas
+5. Run E2E tests to catch regressions
+6. Coordinate deployment with backend team
 
 ## Sprint 2 Focus (Current)
 
 ### Stories
-1. **MCOP-S2-001:** Tool 5 (ER Diagram Generator) - 5-6h
-   - Move inline logic to `src/tool5/`
-   - Add CLI interface
-   - Write 8+ unit tests
-   - Update API endpoint
+1. **UI Polish** - Loading states, error boundaries, toast notifications
+2. **Diagram Export** - PNG/SVG export, copy to clipboard
+3. **Session Management** - Delete sessions, rename, export JSON
+4. **Performance** - Virtualization for large diagrams
 
-2. **MCOP-S2-002:** Production Hardening - 2-3d
-   - JWT authentication
-   - Redis session storage
-   - Sentry error tracking
-   - Rate limiting
-
-3. **MCOP-S2-003:** Real Collibra API - 3-5d
-   - Replace mock data
-   - Implement pagination
-   - Add caching layer
-
-4. **MCOP-S2-004:** Tool 4 Security Analyzer - 2-3d
-   - Detect PII/sensitive columns
-   - Risk scoring
-   - Compliance checks
+### Priority Tasks
+- [ ] Add loading spinners for all async operations
+- [ ] Implement error boundaries for graceful failures
+- [ ] Add toast notifications (react-hot-toast or similar)
+- [ ] Diagram export buttons (PNG/SVG)
+- [ ] Session delete/rename UI in HistoryPage
 
 ## Documentation References
 
 **Local:**
-- `docs_langgraph/structured_output.md` - Tool 0 patterns
-- `docs_langgraph/workflow_agents.md` - Orchestrator patterns
-- `scrum/sprint_2/README.md` - Current sprint plan
-- `scrum/architecture/tool5-er-diagram.md` - Tool 5 architecture
+- `docs/API_CONTRACT.md` - Backend API documentation
+- `docs/VERSION_MATRIX.md` - Compatibility matrix
+- `e2e/` - E2E test examples
 
 **External:**
-- Frontend Repo: https://github.com/minarovic/archi-agent-frontend
-- FastAPI Docs: https://fastapi.tiangolo.com
-- Pydantic Docs: https://docs.pydantic.dev
-- Railway Docs: https://docs.railway.app
-
-## Decision Framework
-
-**When to create a new Tool (Tool 4-7):**
-- Distinct business capability (security, lineage, SAP, versioning)
-- Can be tested independently
-- Has clear input/output schema
-- Takes >30min to execute manually
-
-**When to extend existing Tool:**
-- Enhancement to current capability
-- Shares same input schema
-- Minimal code changes (<100 lines)
+- Backend Repo: https://github.com/minarovic/archi-agent
+- React Docs: https://react.dev
+- Vite Docs: https://vitejs.dev
+- TailwindCSS Docs: https://tailwindcss.com
+- Mermaid Docs: https://mermaid.js.org
+- Playwright Docs: https://playwright.dev
+- Zustand Docs: https://zustand-demo.pmnd.rs
 
 ---
 
-**Remember:** Backend is the **source of truth** for API contract. Always generate and commit `openapi.json` after API changes.
+**Remember:** Frontend **consumes** backend API via `docs/openapi.json`. Always sync schema after backend releases.

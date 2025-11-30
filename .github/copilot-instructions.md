@@ -1,298 +1,373 @@
-# Metadata Copilot Project - GitHub Copilot Instructions
+# Metadata Copilot Frontend - GitHub Copilot Instructions
 
 ## Project Overview
-**Name:** Metadata Copilot (MCOP)
-**Purpose:** Metadata orchestration pipeline connecting business requirements with technical metadata (Collibra, Databricks Unity Catalog, SAP)
-**Current Phase:** MVP Refactoring - Simplifying Tool 2 & 3, creating orchestrator
-**Architecture Strategy:** Progressive evolution from Simplified → Multi-Agent Orchestrator → Pydantic Graph (see AGENTS.md for full pattern guide)
+**Name:** Metadata Copilot (MCOP) Frontend
+**Purpose:** React 19 + Vite frontend for metadata orchestration pipeline visualization
+**Current Phase:** Sprint 2 - Production hardening, UI improvements
+**Tech Stack:** React 19, Vite 7.2.4, TailwindCSS 4.1.17, Zustand, Mermaid.js, Playwright
 
-## MCOP Architecture Patterns
+## Repository Context
+**This is the FRONTEND repository** after monorepo split (2025-11-30).
+**Backend repository:** https://github.com/minarovic/archi-agent
 
-### Pattern Selection Guide (2025-11-10)
+**Key Principle:** Frontend **consumes** API contract from backend via `docs/openapi.json`.
 
-| Tool          | Current Pattern    | Action                | Reasoning                          | Timeline  |
-|---------------|--------------------|-----------------------|------------------------------------|-----------|
-| Tool 0        | ✅ Simplified       | Keep                  | Optimal for single-shot parsing    | Done      |
-| Tool 1        | Pydantic Graph     | ✅ Keep                | 2 LLM agents + checkpoint benefit  | Document  |
-| Tool 2        | Pydantic Graph     | ⚠️ Refactor → Simplified | Lineární flow, graph overkill     | This week |
-| Tool 3        | Pydantic Graph     | ⚠️ Refactor → Simplified | Hybrid better as function         | This week |
-| MVP Orch.     | ❌ Doesn't exist    | 🆕 Create Simplified   | Basic Tool 0→1→2→3 flow            | Next week |
-| Prod. Orch.   | ❌ Doesn't exist    | 📅 Create Multi-Agent  | Error recovery + delegation        | Q1 2026   |
-| Adv. Graph    | ❌ Doesn't exist    | 📅 Consider            | Conditional branching + parallel   | Q2 2026+  |
-
-**Reference:** `docs_langgraph/pydantic_analysis/graph_vs_multiagent_mcop.md` for comprehensive analysis, 3 Mermaid diagrams, and decision matrix.
-
-## Architecture Principles
-
-### Skills-Based Documentation
-- **Markdown files** = source of truth ("what/why")
-- **Skills** = executable automation layer ("how")
-- Skills augment documentation without replacing it
-- All skill outputs logged to `scrum/artifacts/` for audit trail
-
-### Project Structure
+## Project Structure
 ```
-archi-agent/
-├── .claude/skills/           # Executable skills (Anthropic pattern)
-│   ├── scrum/backlog-validator/
-│   └── langchain/compliance-checker/
-├── scrum/
-│   ├── artifacts/            # Audit trail (skill execution outputs)
-│   └── backlog/              # Stories with skill metadata
-├── docs_langgraph/           # LangChain/LangGraph reference docs
-├── src/                      # Source code (Tool 0-7)
-└── data/                     # Samples and test data
+archi-agent-frontend/
+├── src/
+│   ├── components/     # React components
+│   ├── pages/          # Page components
+│   │   ├── HomePage.tsx
+│   │   ├── DiagramPage.tsx
+│   │   └── HistoryPage.tsx
+│   ├── store/          # Zustand state management
+│   ├── api/            # Backend API client
+│   └── types/          # TypeScript types
+├── e2e/                # Playwright E2E tests
+├── docs/
+│   ├── openapi.json    # Backend API schema (synced)
+│   ├── API_CONTRACT.md # Human-readable API docs
+│   └── VERSION_MATRIX.md # Compatibility matrix
+├── public/             # Static assets
+├── package.json
+├── vite.config.ts
+└── README.md
 ```
 
-## Scrum Story Frontmatter
+## Tech Stack
 
-All stories in `scrum/backlog/*.md` must include:
-```yaml
----
-id: MCOP-XXX
-type: story | epic | task
-status: planned | in-progress | done | blocked
-priority: must-have | should-have | could-have | wont-have
-updated: YYYY-MM-DD
+### Core
+- **React 19** - UI framework with concurrent features
+- **TypeScript 5.3** - Type safety
+- **Vite 7.2.4** - Build tool with HMR
 
----
+### Styling
+- **TailwindCSS 4.1.17** - Utility-first CSS
+- **PostCSS** - CSS transformations
+
+### State Management
+- **Zustand** - Lightweight state management
+```typescript
+interface MCOPState {
+  sessions: Session[];
+  currentSession: Session | null;
+  orchestrationProgress: OrchestrationProgress;
+  addSession: (session: Session) => void;
+  updateProgress: (progress: OrchestrationProgress) => void;
+}
 ```
 
-## Definition of Done
+### Visualization
+- **Mermaid.js 10.6.1** - ER diagram rendering
+- Pan/zoom support via custom hooks
+- Export to PNG/SVG
 
-### General DoD
-- Code reviewed and approved
-- Tests written and passing
-- Documentation updated
+### Testing
+- **Playwright 1.57.0** - E2E testing
+- **@playwright/test** - Test runner
+- 24 tests: 4 workflows × 3 browsers × 2 screen sizes
 
-### Skill DoD (when `skill_created: true`)
-- Skill implementation exists at path defined in `skill_implementation`
-- Skill has valid `SKILL.md` with frontmatter
-- Skill executed successfully (locally or CI)
-- Output saved to `scrum/artifacts/YYYY-MM-DD_<skill-name>.json`
-- README with usage instructions created
+### API Integration
+- **Native fetch** - HTTP client
+- **WebSocket** - Real-time orchestration progress
 
-## Pydantic AI Best Practices (PREFERRED)
+## API Contract Management
 
-### Phase 1: Simplified Pattern (Current - Tool 0, 2, 3, MVP Orchestrator)
-```python
-from openai import OpenAI
-from pydantic import BaseModel, Field
-
-class ParsedRequest(BaseModel):
-    """Model description."""
-    field: str = Field(description="Field description")
-
-client = OpenAI(
-    base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY")
-)
-
-response = client.chat.completions.create(
-    model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-    response_format={"type": "json_object"},
-    messages=[{"role": "user", "content": prompt}]
-)
-
-result = ParsedRequest.model_validate_json(response.choices[0].message.content)
-```
-
-### Phase 2: Multi-Agent Orchestrator (Q1 2026)
-```python
-from pydantic_ai import Agent
-
-orchestrator = Agent('gpt-5-mini', instructions='Coordinate MCOP pipeline')
-
-@orchestrator.tool
-async def parse_business_request(ctx, document: str) -> dict:
-    """Delegate to Tool 0."""
-    return await tool0_agent.run(document, usage=ctx.usage)
-```
-
-### Phase 3: Pydantic Graph (Q2 2026+)
-```python
-from pydantic_graph import Graph, BaseNode, GraphRunContext, End
-
-@dataclass
-class ValidateQuality(BaseNode[MCOPState]):
-    async def run(self, ctx: GraphRunContext[MCOPState]) -> RerunMapping | EnrichSecurity | End:
-        if ctx.state.quality_score < 0.7:
-            return RerunMapping()  # Loop back to Tool 1
-        elif ctx.state.risk_level == "HIGH":
-            return EnrichSecurity()  # Parallel Tool 4+5+6
-        else:
-            return End()
-```
-
-## LangChain (LEGACY - Tool 1 maintenance only)
-
-**Only use for Tool 1 existing implementation:**
-```python
-from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
-from langchain_openai import AzureChatOpenAI
-
-AZURE_LLM = AzureChatOpenAI(
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-    api_version="2024-10-21"
-)
-agent = create_agent(model=AZURE_LLM, response_format=ToolStrategy(MySchema))
-```
-
-**Validation (if modifying Tool 1):**
+### Sync API Schema from Backend
+**Run after backend releases new version:**
 ```bash
-python3 .claude/skills/langchain/compliance-checker/check.py --file <path>
+npm run sync-api
 ```
 
+This downloads latest `openapi.json` from backend repo.
 
-
-## Tool 0 (Business Request Parser) Specifics
-
-**Status:** ✅ Implemented (using Azure AI Foundry)
-**Implementation Path:** `src/tool0/parser.py`
-**Demo Notebook:** `notebooks/tool0_parser_demo.ipynb`
-**Key Requirements:**
-- Parse standardized Markdown business documents
-- Return structured JSON via Pydantic schema
-- Use OpenAI SDK with JSON mode (NOT LangChain/ToolStrategy)
-- Support Czech/English mixed content
-- Fallback to "unknown" for missing sections
-- Return tuple: `(parsed_json, raw_response, prompt)`
-- Save samples to `data/tool0_samples/` for regression testing
-
-**Schema Fields:**
-- `project_metadata` (project_name, sponsor, submitted_at in ISO 8601, extra)
-- `goal`, `scope_in`, `scope_out`
-- `entities[]`, `metrics[]`, `sources[]`, `constraints[]`, `deliverables[]`
-
-## MCP Tools Available
-
-### docsLangchain (mcp_docslangchain_SearchDocsByLangChain)
-**Purpose:** Search LangChain documentation
-**When to use:** Need up-to-date LangChain/LangGraph patterns
-**Config:** `.vscode/mcp.json`
-
-## Python Environment
-
-**Version:** Python 3.13
-**Command:** Use `python3` (not `python`)
-**Key Dependencies:** pyyaml, pydantic, langchain, langgraph, openai, python-dotenv
-
-## Azure AI Foundry Configuration
-
-**Model:** gpt-5-mini-2025-08-07
-**Deployment:** test-gpt-5-mini
-**Region:** Sweden Central
-**API Version:** 2024-10-21
-
-**Environment variables** (`.env` file, gitignored):
-```
-AZURE_OPENAI_ENDPOINT=https://minar-mhi2wuzy-swedencentral.cognitiveservices.azure.com/openai/v1/
-AZURE_OPENAI_API_KEY=<your-key>
-AZURE_OPENAI_DEPLOYMENT_NAME=test-gpt-5-mini
+### Check Compatibility
+```bash
+npm run check-api
 ```
 
-**Two usage patterns:**
+Runs `scripts/check-api-compatibility.js` to verify backend-frontend version compatibility.
 
-1. **Pattern A (Tool 0):** Direct OpenAI SDK with JSON mode
-   ```python
-   from openai import OpenAI
-   client = OpenAI(
-       base_url=os.getenv("AZURE_OPENAI_ENDPOINT"),
-       api_key=os.getenv("AZURE_OPENAI_API_KEY")
-   )
-   response = client.chat.completions.create(
-       model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-       response_format={"type": "json_object"}
-   )
-   ```
+### Version Matrix
+See `docs/VERSION_MATRIX.md` for compatibility rules:
+- Major version must match (0.x.x → 1.x.x = breaking)
+- Minor version can lag (0.1.x can use 0.2.x backend with degraded features)
+- Patch version always compatible within minor
 
-2. **Pattern B (Tool 1, Tool 2):** LangChain agents with AzureChatOpenAI
-   ```python
-   from langchain_openai import AzureChatOpenAI
-   AZURE_LLM = AzureChatOpenAI(
-       azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-       api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-       azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-       api_version="2024-10-21"
-   )
-   agent = create_agent(model=AZURE_LLM, ...)
-   ```
+## Development Workflow
 
-**Model limitations:**
-- Temperature parameter NOT supported (uses default=1)
-- Use JSON mode or ToolStrategy for structured output
+### Local Setup
+```bash
+# Install dependencies
+npm install
+
+# Sync API schema
+npm run sync-api
+
+# Start dev server
+npm run dev
+```
+
+Open http://localhost:5173
+
+### Environment Variables
+Create `.env`:
+```
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
+```
+
+### Hot Module Replacement
+Vite provides instant HMR. Changes reflect in browser without full reload.
+
+## Component Architecture
+
+### Pages
+- **HomePage** - Business request editor + orchestration trigger
+  - Textarea for Markdown input
+  - "Parse Request" button (Tool 0)
+  - "Run Orchestration" button (Tool 0→1→2→3)
+  - Real-time progress indicator (WebSocket)
+
+- **DiagramPage** - ER diagram viewer
+  - Mermaid.js rendering
+  - Pan/zoom controls
+  - Export buttons (PNG/SVG)
+  - Entity filtering
+
+- **HistoryPage** - Session list
+  - Past orchestrations
+  - Session details
+  - Restore capability
+
+### State Management (Zustand)
+```typescript
+// store/useStore.ts
+import create from 'zustand';
+
+const useStore = create<MCOPState>((set) => ({
+  sessions: [],
+  currentSession: null,
+  orchestrationProgress: null,
+
+  addSession: (session) =>
+    set((state) => ({ sessions: [...state.sessions, session] })),
+
+  updateProgress: (progress) =>
+    set({ orchestrationProgress: progress }),
+}));
+```
+
+### WebSocket Integration
+```typescript
+// api/websocket.ts
+const ws = new WebSocket(`${VITE_WS_URL}/ws/orchestrate`);
+
+ws.onmessage = (event) => {
+  const progress: OrchestrationProgress = JSON.parse(event.data);
+  useStore.getState().updateProgress(progress);
+};
+
+ws.onerror = (error) => {
+  console.error('WebSocket error:', error);
+};
+```
+
+### API Client
+```typescript
+// api/client.ts
+export async function parseBusinessRequest(document: string) {
+  const response = await fetch(`${VITE_API_URL}/parse/business-request`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ document }),
+  });
+  return response.json();
+}
+
+export async function runOrchestration(document: string, collibra_url: string) {
+  const response = await fetch(`${VITE_API_URL}/orchestrate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ document, collibra_url }),
+  });
+  return response.json();
+}
+```
+
+## Testing
+
+### E2E Tests (Playwright)
+```bash
+# Run all tests
+npm test
+
+# Run specific browser
+npx playwright test --project=chromium
+
+# Debug mode
+npx playwright test --debug
+
+# UI mode (interactive)
+npx playwright test --ui
+```
+
+### Test Scenarios
+- ✅ Business request parsing workflow
+- ✅ Full orchestration (Tool 0→1→2→3)
+- ✅ Diagram interaction (pan/zoom/filter)
+- ✅ Session history + restore
+
+### Writing E2E Tests
+```typescript
+// e2e/orchestration.spec.ts
+import { test, expect } from '@playwright/test';
+
+test('full orchestration workflow', async ({ page }) => {
+  await page.goto('http://localhost:5173');
+
+  // Enter business request
+  await page.fill('textarea', '# Project: Test\n...');
+
+  // Trigger orchestration
+  await page.click('button:text("Run Orchestration")');
+
+  // Wait for progress updates
+  await expect(page.locator('.progress-bar')).toBeVisible();
+  await expect(page.locator('.progress-bar')).toHaveAttribute('data-step', 'tool3');
+
+  // Verify diagram rendered
+  await page.click('a[href="/diagram"]');
+  await expect(page.locator('.mermaid')).toBeVisible();
+});
+```
+
+## Styling with TailwindCSS
+
+### Configuration
+```javascript
+// tailwind.config.js
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {
+      colors: {
+        'mcop-primary': '#3b82f6',
+        'mcop-secondary': '#10b981',
+      },
+    },
+  },
+  plugins: [],
+};
+```
+
+### Usage
+```typescript
+// HomePage.tsx
+<button className="bg-mcop-primary hover:bg-blue-600 text-white px-4 py-2 rounded">
+  Run Orchestration
+</button>
+```
+
+## Deployment
+
+**Platform:** Vercel
+**Region:** us-west1
+**Auto-Deploy:** On main branch push
+
+**Manual Deploy:**
+```bash
+vercel --prod
+```
+
+### Environment Variables (Vercel)
+Set in Vercel dashboard:
+- `VITE_API_URL` = `https://archi-agent.railway.app`
+- `VITE_WS_URL` = `wss://archi-agent.railway.app`
+
+## Cross-Repo Workflow
+
+### Backend Releases New API Version
+1. Backend tags release: `v0.2.0`
+2. Frontend runs: `npm run sync-api`
+3. Review: `git diff docs/openapi.json`
+4. Update components if needed:
+   - Check for new endpoints
+   - Update types in `src/types/`
+   - Adjust API client calls
+5. Test: `npm test` (verify E2E tests pass)
+6. Commit: `git add docs/openapi.json src/`
+7. Tag compatible version: `git tag v0.2.0`
+8. Push and deploy
+
+### Handling Breaking Changes
+If backend bumps major version (e.g., `v1.0.0`):
+1. Review `CHANGELOG.md` in backend repo
+2. Create migration PR in frontend
+3. Update API client for changed endpoints
+4. Update types for changed schemas
+5. Run E2E tests to catch regressions
+6. Coordinate deployment timing with backend team
 
 ## Common Pitfalls to Avoid
 
-1. ❌ Don't pass Pydantic schema directly to create_agent
-2. ❌ Don't forget Field descriptions in Pydantic models
-3. ❌ Don't use deprecated import paths
-4. ❌ Don't modify files in `scrum/artifacts/` manually
-5. ❌ Don't skip template files (starting with `_`) in validators
-6. ❌ Don't forget to convert dates to `.isoformat()` for JSON
-7. ❌ Don't use bare `try/except` without proper error handling
+1. ❌ Don't hardcode API URLs (use `VITE_API_URL` env var)
+2. ❌ Don't forget to sync API schema after backend changes
+3. ❌ Don't commit `docs/openapi.json` without running `npm run check-api`
+4. ❌ Don't use `any` type - define proper TypeScript interfaces
+5. ❌ Don't skip E2E tests for new features
+6. ❌ Don't inline large SVGs - use Mermaid.js for diagrams
 
-## Testing & Validation Workflow
+## Sprint 2 Focus (Current)
 
-1. **Before Commit:**
-   ```bash
-   # Validate backlog structure
-   python3 .claude/skills/scrum/backlog-validator/validate.py
+### Stories
+1. **UI Polish** - Loading states, error boundaries, toast notifications
+2. **Diagram Export** - PNG/SVG export, copy to clipboard
+3. **Session Management** - Delete sessions, rename, export JSON
+4. **Performance** - Virtualization for large diagrams, lazy loading
 
-   # Check LangChain compliance
-   python3 .claude/skills/langchain/compliance-checker/check.py --all
-   ```
+### Priority Tasks
+- [ ] Add loading spinners for API calls
+- [ ] Implement error boundaries for graceful failures
+- [ ] Add toast notifications (success/error messages)
+- [ ] Diagram export to PNG/SVG
+- [ ] Session delete/rename UI
 
-2. **When Updating Story:**
-   - Update frontmatter fields (especially `updated` date)
-   - Set `skill_created: true` when skill is implemented
-   - Change `skill_status` appropriately
+## Code Style
 
-3. **When Adding Skill:**
-   - Update story frontmatter with `skill_implementation` path
-   - Create SKILL.md with required metadata
-   - Test execution and verify output in artifacts/
-   - Document in README.md
+### Formatting
+```bash
+npm run format
+```
 
-## Future Roadmap
+### Linting
+```bash
+npm run lint
+```
 
-### MVP Phase (Current)
-- ✅ Skills framework implemented
-- ✅ Backlog validator working
-- ✅ LangChain compliance checker (Phase 1)
-- ✅ Tool 0 implemented with Azure AI Foundry
-- ✅ All notebooks migrated to Azure (tool0, tool1, tool2)
-- ✅ Workshop Presentation Materials (2025-11-07):
-  - 5 documents: TierIndex foundation, capabilities, architecture, use cases, slides
-  - Pseudo-kód a UML diagramy místo SQL/Python
-  - MCOP positioned as metadata orchestrator
+### Type Checking
+```bash
+npm run type-check
+```
 
-### Phase 2 (Planned)
-- Online docs sync via MCP tool
-- API change notifications
-- Auto-migration guides
-- CI/CD integration (GitHub Actions)
-- Tool 1-7 implementation
+## Documentation References
 
-## Contact & References
+**Local:**
+- `docs/API_CONTRACT.md` - Backend API documentation
+- `docs/VERSION_MATRIX.md` - Compatibility matrix
+- `e2e/` - E2E test examples
 
-**Documentation:**
-- Local: `docs_langgraph/*.md`, `docs_langgraph/workshop_presentation/*.md`
-- Memory: `/memories/azure-ai-foundry-setup.md`, `/memories/workshop-terminology-translation.md`
-- Template: `scrum/backlog/_STORY_TEMPLATE.md`
+**External:**
+- Backend Repo: https://github.com/minarovic/archi-agent
+- React Docs: https://react.dev
+- Vite Docs: https://vitejs.dev
+- TailwindCSS Docs: https://tailwindcss.com
+- Mermaid Docs: https://mermaid.js.org
+- Playwright Docs: https://playwright.dev
 
-**Workshop Materials (2025-11-07):**
-- `docs_langgraph/workshop_presentation/README.md` - Workshop structure
-- `03_tierindex_context.md` - Foundation with practical examples
-- `02_capabilities_overview.md` - 4 business capabilities
-- `04_architecture_decisions.md` - 5 key decisions
-- `05_slide_deck.md` - 15-slide executive presentation
-- `01_mapping_verification_use_case.md` - Optional deep dive
+## Contact
 
-**Skills Pattern Reference:**
-- Based on Anthropic Skills best practices
-- Hybrid documentation/execution model
-- Progressive disclosure (keep SKILL.md minimal)
+**Repository:** https://github.com/minarovic/archi-agent-frontend
+**Backend:** https://github.com/minarovic/archi-agent
+**Owner:** @minarovic
