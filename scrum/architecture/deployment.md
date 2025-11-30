@@ -22,7 +22,7 @@ Tento dokument popisuje nasadenie MCOP aplikácie na Railway (backend) a Vercel 
 │                                            ▼                     │
 │                                   ┌──────────────────┐          │
 │                                   │ Azure OpenAI     │          │
-│                                   │ (gpt-4o-mini)    │          │
+│                                   │ (gpt-5-mini)     │          │
 │                                   └──────────────────┘          │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘

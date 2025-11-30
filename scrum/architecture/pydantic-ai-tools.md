@@ -18,7 +18,7 @@ class MyDeps:
     config: dict
 
 my_agent = Agent(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     deps_type=MyDeps,
     system_prompt="You are a helpful assistant."
 )
@@ -86,7 +86,7 @@ class ExplorerDeps:
 
 # Agent definition with system prompt
 explorer_agent = Agent(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     deps_type=ExplorerDeps,
     system_prompt="""You are a metadata exploration assistant for MCOP.
 
@@ -296,7 +296,7 @@ Agent potom používa:
 ```python
 # Model name mapuje na deployment
 agent = Agent(
-    model="openai:gpt-4o-mini",  # Maps to Azure deployment
+    model="openai:gpt-5-mini",  # Maps to Azure deployment
     deps_type=MyDeps,
 )
 ```

@@ -34,13 +34,13 @@ IMPORTANT INSTRUCTIONS:
 
 
 def parse_business_request(
-    document: str, model: str = "openai:gpt-4o-mini"
+    document: str, model: str = "openai:gpt-5-mini"
 ) -> Tuple[Dict[str, Any], str, str]:
     """Parse a business request document into structured JSON.
 
     Args:
         document: Markdown document containing business request
-        model: LLM model to use (default: openai:gpt-4o-mini)
+        model: LLM model to use (default: openai:gpt-5-mini)
 
     Returns:
         Tuple of (parsed_json, raw_response, prompt) for audit trail:
@@ -119,7 +119,7 @@ Extract all information into the structured format."""
 
 def parse_business_request_with_logging(
     document: str,
-    model: str = "openai:gpt-4o-mini",
+    model: str = "openai:gpt-5-mini",
     log_to_file: bool = False,
     output_dir: str = "data/tool0_samples",
 ) -> Tuple[Dict[str, Any], str, str]:

@@ -53,7 +53,7 @@ class ExplorerDeps:
     session_id: str
 
 explorer_agent = Agent(
-    model="openai:gpt-4o-mini",  # Azure deployment mapped via env
+    model="openai:gpt-5-mini",  # Azure deployment mapped via env
     deps_type=ExplorerDeps,
     system_prompt="""You are a metadata exploration assistant for MCOP.
 
@@ -298,7 +298,7 @@ import os
 from pydantic_ai import Agent
 
 agent = Agent(
-    model="openai:gpt-4o-mini",
+    model="openai:gpt-5-mini",
     # Azure mapping happens via OPENAI_API_BASE env var
 )
 ```

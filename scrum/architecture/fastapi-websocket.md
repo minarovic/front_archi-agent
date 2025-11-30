@@ -1,6 +1,22 @@
 # FastAPI WebSocket Implementation
 
-Tento dokument popisuje implementáciu WebSocket endpointu pre real-time chat s Explorer Agent-om.
+**⚠️ DEPRECATED:** Tento dokument bol presunutý do `/docs_pydantic/websocket-streaming.md`.
+
+Prosím použite nový dokument, ktorý obsahuje:
+- Kompletnú explanation WebSocket vs HTTP
+- Detailný sequence diagram komunikácie
+- Async streaming implementation (ChatGPT-like)
+- Canvas integration workflow
+- Frontend + Backend code examples
+- Error handling & reconnection logic
+
+**Nová lokácia:** [docs_pydantic/websocket-streaming.md](../../docs_pydantic/websocket-streaming.md)
+
+---
+
+## Základný príklad (Quick Reference)
+
+Pre plnú dokumentáciu pozri nový dokument vyššie.
 
 ## Základný vzor
 
