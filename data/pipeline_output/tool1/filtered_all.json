@@ -1,0 +1,141 @@
+{
+  "schemas": [
+    {
+      "name": "dm_ba_purchase",
+      "total_children": 72,
+      "views": 72,
+      "dimensions": 52,
+      "facts": 11,
+      "relations": 9,
+      "validated_true": 1,
+      "articulation_gt0": 1
+    },
+    {
+      "name": "dm_bs_purchase",
+      "total_children": 18,
+      "views": 18,
+      "dimensions": 11,
+      "facts": 7,
+      "relations": 0,
+      "validated_true": 0,
+      "articulation_gt0": 0
+    }
+  ],
+  "views": [
+    "dm_ba_purchase",
+    "dm_bs_purchase"
+  ],
+  "columns": [
+    "accounting_currency_code",
+    "accounting_currency_name_cz",
+    "accounting_currency_name_en",
+    "accounting_reporting_currency_group",
+    "accounting_reporting_sort_order",
+    "dim_accounting_currency_key",
+    "cost_center_code"
+  ],
+  "top_articulated": [
+    {
+      "displayName": "dm_ba_purchase",
+      "id": "0192480d-a0dc-736e-b034-c740659fcbcd",
+      "typeName": "Schema",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dm_bs_purchase",
+      "id": "0192480d-b047-7428-9137-5045fbca17da",
+      "typeName": "Schema",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dimv_material",
+      "id": "0192480d-a107-7358-899c-e945db393618",
+      "typeName": "Database View",
+      "schema": "dm_ba_purchase",
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_code",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5725",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_name_cz",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5692",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_currency_name_en",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5722",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_reporting_currency_group",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea5757",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "accounting_reporting_sort_order",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea564d",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "dim_accounting_currency_key",
+      "id": "0195632d-662d-74a5-8b0b-c05615ea56a2",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    },
+    {
+      "displayName": "cost_center_code",
+      "id": "0192480d-a107-7358-899c-e945db393558",
+      "typeName": "Column",
+      "schema": null,
+      "articulationScore": 100.0,
+      "validationResult": true
+    }
+  ],
+  "stats": {
+    "total_assets": 92,
+    "schemas_count": 2,
+    "views_count": 90,
+    "columns_count": 0,
+    "scope": null,
+    "source_file": "data/analysis/ba_bs_datamarts_summary.json",
+    "filtered_at": "2025-11-30T09:49:30.516359"
+  },
+  "quality": {
+    "articulation_mean": 5.975143403441683,
+    "articulation_median": 0.0,
+    "articulation_min": 0.0,
+    "articulation_max": 100.0,
+    "validation_rate": 0.05975143403441682,
+    "nonzero_articulation_share": 0.05975143403441682
+  },
+  "raw_totals": {
+    "total_assets_raw": 2182,
+    "total_assets_dedup": 2092,
+    "schemas": 2
+  }
+}

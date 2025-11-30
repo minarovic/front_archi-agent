@@ -1,11 +1,18 @@
 # Core dependencies for Pydantic Graph + Pydantic AI approach
 # pydantic-ai includes pydantic-graph (verified via official docs)
-pydantic-ai[graph]>=0.0.49  # Includes pydantic-graph for orchestration
+pydantic-ai>=1.0.0  # Includes pydantic-graph for orchestration
 pydantic>=2.0.0
 python-dotenv>=1.0.0
 PyYAML>=6.0.0
 openai>=1.0.0
 databricks-sdk>=0.73.0
+
+# FastAPI Backend (Phase 3)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.6
+httpx>=0.27.0  # For TestClient
 
 # Testing
 pytest>=7.4.0

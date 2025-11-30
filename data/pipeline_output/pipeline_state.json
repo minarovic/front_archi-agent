@@ -40,7 +40,7 @@
       "columns_count": 0,
       "scope": "bs",
       "source_file": "data/analysis/ba_bs_datamarts_summary.json",
-      "filtered_at": "2025-11-30T03:16:30.849742"
+      "filtered_at": "2025-11-30T09:49:30.763631"
     },
     "quality": {
       "articulation_mean": 5.975143403441683,
@@ -211,7 +211,7 @@
       "dimension_count": 11,
       "relationship_count": 0,
       "unclassified_count": 0,
-      "classification_timestamp": "2025-11-30T03:16:30.850803",
+      "classification_timestamp": "2025-11-30T09:49:30.763912",
       "classification_method": "heuristic"
     },
     "unclassified": []
@@ -224,7 +224,7 @@
       "validation_coverage": 1.0,
       "articulation_coverage": 0.0,
       "total_entities": 18,
-      "timestamp": "2025-11-30T03:16:30.851748"
+      "timestamp": "2025-11-30T09:49:30.764141"
     },
     "recommendations": [
       {
@@ -292,30 +292,30 @@
     ],
     "risk_level": "HIGH",
     "quality_score": 0.6000000000000001,
-    "execution_time_seconds": 2.6e-05,
+    "execution_time_seconds": 2.4e-05,
     "mode": "deterministic"
   },
-  "started_at": "2025-11-30T03:16:30.848848",
+  "started_at": "2025-11-30T09:49:30.763484",
   "completed_at": null,
   "total_duration_seconds": null,
   "step_timings": [
     {
       "step": "tool1",
-      "started_at": "2025-11-30T03:16:30.848931",
-      "completed_at": "2025-11-30T03:16:30.849945",
-      "duration_seconds": 0.001014
+      "started_at": "2025-11-30T09:49:30.763530",
+      "completed_at": "2025-11-30T09:49:30.763842",
+      "duration_seconds": 0.000312
     },
     {
       "step": "tool2",
-      "started_at": "2025-11-30T03:16:30.849950",
-      "completed_at": "2025-11-30T03:16:30.851126",
-      "duration_seconds": 0.001176
+      "started_at": "2025-11-30T09:49:30.763848",
+      "completed_at": "2025-11-30T09:49:30.764123",
+      "duration_seconds": 0.000275
     },
     {
       "step": "tool3",
-      "started_at": "2025-11-30T03:16:30.851130",
-      "completed_at": "2025-11-30T03:16:30.851963",
-      "duration_seconds": 0.000833
+      "started_at": "2025-11-30T09:49:30.764126",
+      "completed_at": "2025-11-30T09:49:30.764308",
+      "duration_seconds": 0.000182
     }
   ]
 }

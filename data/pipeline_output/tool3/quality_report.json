@@ -6,7 +6,7 @@
     "validation_coverage": 1.0,
     "articulation_coverage": 0.0,
     "total_entities": 18,
-    "timestamp": "2025-11-30T03:16:30.851748"
+    "timestamp": "2025-11-30T09:49:30.764141"
   },
   "recommendations": [
     {
@@ -74,6 +74,6 @@
   ],
   "risk_level": "HIGH",
   "quality_score": 0.6000000000000001,
-  "execution_time_seconds": 2.6e-05,
+  "execution_time_seconds": 2.4e-05,
   "mode": "deterministic"
 }
