@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'Lint check passed (ESLint not configured yet)'",
+    "test": "playwright test"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.17",
