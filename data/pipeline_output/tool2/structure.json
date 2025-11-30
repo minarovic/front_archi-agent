@@ -1,0 +1,160 @@
+{
+  "facts": [
+    {
+      "name": "dm_bs_purchase_fact_1",
+      "entity_id": "entity_1",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_2",
+      "entity_id": "entity_2",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_3",
+      "entity_id": "entity_3",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_4",
+      "entity_id": "entity_4",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_5",
+      "entity_id": "entity_5",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_6",
+      "entity_id": "entity_6",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_fact_7",
+      "entity_id": "entity_7",
+      "description": "Fact table from dm_bs_purchase",
+      "grain": "transaction",
+      "estimated_size": "small",
+      "source_schema": "dm_bs_purchase"
+    }
+  ],
+  "dimensions": [
+    {
+      "name": "dm_bs_purchase_dim_1",
+      "entity_id": "entity_1",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_2",
+      "entity_id": "entity_2",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_3",
+      "entity_id": "entity_3",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_4",
+      "entity_id": "entity_4",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_5",
+      "entity_id": "entity_5",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_6",
+      "entity_id": "entity_6",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_7",
+      "entity_id": "entity_7",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_8",
+      "entity_id": "entity_8",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_9",
+      "entity_id": "entity_9",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_10",
+      "entity_id": "entity_10",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    },
+    {
+      "name": "dm_bs_purchase_dim_11",
+      "entity_id": "entity_11",
+      "description": "Dimension table from dm_bs_purchase",
+      "dim_type": "reference",
+      "slowly_changing": false,
+      "source_schema": "dm_bs_purchase"
+    }
+  ],
+  "relationships": [],
+  "metrics": {
+    "fact_count": 7,
+    "dimension_count": 11,
+    "relationship_count": 0,
+    "unclassified_count": 0,
+    "classification_timestamp": "2025-11-30T03:16:30.850803",
+    "classification_method": "heuristic"
+  },
+  "unclassified": []
+}
