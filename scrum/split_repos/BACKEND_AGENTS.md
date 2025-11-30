@@ -34,18 +34,6 @@ Current focus: Sprint 2 - Tool 5 implementation, production hardening
 - 265 tests passing in Sprint 1
 - Target: 90%+ coverage for Tool modules
 
-## Scrum Story Structure
-Every story in `scrum/backlog/*.md` requires:
-```yaml
----
-id: MCOP-XXX
-type: story | epic | task
-status: planned | in-progress | done | blocked
-priority: must-have | should-have | could-have | wont-have
-updated: YYYY-MM-DD
----
-```
-
 ## MCOP Tool Architecture
 
 | Tool         | Pattern               | Status        | Path                                 |
@@ -134,62 +122,6 @@ def test_generate_diagram_performance(entity_count):
     assert len(result["entities"]) == entity_count
 ```
 
-## Pydantic AI Patterns (PREFERRED)
-
-**For Phase 2+ (Multi-Agent Orchestrator):**
-```python
-from pydantic_ai import Agent
-
-orchestrator = Agent('gpt-5-mini', instructions='Coordinate MCOP pipeline')
-
-@orchestrator.tool
-async def parse_business_request(ctx, document: str) -> dict:
-    """Parse business document using Tool 0."""
-    return await tool0_agent.run(document, usage=ctx.usage)
-
-@orchestrator.tool
-async def map_entities(ctx, parsed: dict) -> dict:
-    """Map entities using Tool 1."""
-    return await tool1_agent.run(parsed, usage=ctx.usage)
-```
-
-**For Phase 3 (Pydantic Graph State Machine):**
-```python
-from pydantic_graph import Graph, BaseNode, GraphRunContext, End
-
-@dataclass
-class ValidateQuality(BaseNode[MCOPState]):
-    async def run(self, ctx: GraphRunContext[MCOPState]) -> RerunMapping | EnrichSecurity | End:
-        if ctx.state.quality_score < 0.7:
-            return RerunMapping()  # Loop back
-        elif ctx.state.risk_level == "HIGH":
-            return EnrichSecurity()  # Parallel Tool 4+5+6
-        else:
-            return End()
-```
-
-### LangChain (LEGACY - Tool 1 only)
-
-**Only use for Tool 1 maintenance:**
-```python
-from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
-from langchain_openai import AzureChatOpenAI
-
-AZURE_LLM = AzureChatOpenAI(
-    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-    azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-    api_version="2024-10-21"
-)
-agent = create_agent(
-    model=AZURE_LLM,
-    response_format=ToolStrategy(MySchema)
-)
-```
-
-
-
 ## Python Environment
 
 **Version:** Python 3.13
@@ -239,15 +171,6 @@ response = client.chat.completions.create(
 result = MySchema.model_validate_json(response.choices[0].message.content)
 ```
 
-## Common Mistakes to Avoid
-
-1. ❌ Forgetting to generate OpenAPI schema after API changes
-2. ❌ Not adding Field descriptions to Pydantic models
-3. ❌ Bare `try/except` without proper error logging
-4. ❌ Hardcoding API URLs (use environment variables)
-5. ❌ Skipping tests for new features
-6. ❌ Not using `.isoformat()` for datetime JSON serialization
-
 ## Pre-Commit Checklist
 
 **For any commit:**
@@ -264,6 +187,15 @@ python3 .claude/skills/scrum/backlog-validator/validate.py
 # 4. Check LangChain compliance (if using LangChain)
 python3 .claude/skills/langchain/compliance-checker/check.py --all
 ```
+
+## Common Mistakes to Avoid
+
+1. ❌ Forgetting to generate OpenAPI schema after API changes
+2. ❌ Not adding Field descriptions to Pydantic models
+3. ❌ Bare `try/except` without proper error logging
+4. ❌ Hardcoding API URLs (use environment variables)
+5. ❌ Skipping tests for new features
+6. ❌ Not using `.isoformat()` for datetime JSON serialization
 
 ## Deployment
 

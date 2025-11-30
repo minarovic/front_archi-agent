@@ -3,3 +3,6 @@
 
 # Obsolete notebooks (archived versions)
 notebooks/obsolete/
+
+# Frontend test results
+frontend/test-results/
