@@ -1,4 +1,6 @@
 import { Message } from '../types';
+import { FollowUpBadge } from './FollowUpBadge';
+import { isFollowUpMessage } from '../utils/detectFollowUp';
 
 interface Props {
   messages: Message[];
@@ -6,50 +8,60 @@ interface Props {
 
 export function MessageList({ messages }: Props) {
   if (messages.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-8">
-        <p className="text-2xl mb-2">👋</p>
-        <p className="font-medium">Hi! I'm the MCOP Explorer Agent.</p>
-        <p className="text-sm mt-2">Ask me about tables, columns, or relationships.</p>
-        <div className="mt-6 text-sm text-left max-w-xs mx-auto">
-          <p className="font-medium mb-2">Try asking:</p>
-          <ul className="space-y-1 text-gray-600">
-            <li>• "List all tables"</li>
-            <li>• "What columns does factv_purchase_order have?"</li>
-            <li>• "Find columns with 'supplier' in the name"</li>
-            <li>• "What are the relationships?"</li>
-          </ul>
-        </div>
-      </div>
-    );
+    return null; // InitialView will be shown instead
   }
 
   return (
-    <div className="space-y-4">
-      {messages.map((message) => (
-        <MessageBubble key={message.id} message={message} />
+    <div className="space-y-4" data-testid="message-list">
+      {messages.map((message, index) => (
+        <MessageBubble
+          key={message.id}
+          message={message}
+          messageIndex={index}
+        />
       ))}
     </div>
   );
 }
 
-function MessageBubble({ message }: { message: Message }) {
+interface MessageBubbleProps {
+  message: Message;
+  messageIndex: number;
+}
+
+function MessageBubble({ message, messageIndex }: MessageBubbleProps) {
   const isUser = message.type === 'user';
   const isPartial = message.type === 'agent_partial';
   const isError = message.type === 'error';
 
+  // FE-006: Detect follow-up (prefer backend flag, fallback to client-side)
+  const showFollowUp = isUser && (
+    message.isFollowUp || isFollowUpMessage(message.content, messageIndex)
+  );
+
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div
+      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      data-testid={`${message.type}-message`}
+    >
       <div
         className={`max-w-[85%] rounded-lg px-4 py-2 ${
           isUser
-            ? 'bg-blue-600 text-white'
+            ? 'bg-primary-dark text-white'
             : isError
             ? 'bg-red-100 text-red-800 border border-red-200'
             : 'bg-gray-100 text-gray-800'
         } ${isPartial ? 'animate-pulse' : ''}`}
       >
-        <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+        <div className="flex items-start justify-between gap-2">
+          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+
+          {/* FE-006: Follow-up Badge */}
+          {showFollowUp && (
+            <FollowUpBadge className="flex-shrink-0 mt-0.5" />
+          )}
+        </div>
+
         {message.toolName && (
           <p className="text-xs mt-1 opacity-70">🔧 {message.toolName}</p>
         )}

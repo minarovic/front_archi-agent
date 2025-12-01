@@ -1,8 +1,38 @@
+import { useState, useEffect } from 'react';
 import { useChatStore } from '../store/chatStore';
 import { MermaidDiagram } from './MermaidDiagram';
+import { ViewModeToggle } from './ViewModeToggle';
+import { MetricsHeader, MetricsUnavailable, pipelineMetricsToItems } from './MetricsHeader';
+import { LoadingDots } from './LoadingDots';
+import { ViewMode, PipelineMetrics } from '../types';
 
-export function Canvas() {
-  const { diagram } = useChatStore();
+interface CanvasProps {
+  metrics?: PipelineMetrics | null;
+  isCanvasLoading?: boolean;
+}
+
+export function Canvas({ metrics, isCanvasLoading }: CanvasProps) {
+  const { diagram, isLoading } = useChatStore();
+  const [viewMode, setViewMode] = useState<ViewMode>('diagram');
+
+  // Keyboard shortcuts (T for Table, D for Diagram)
+  useEffect(() => {
+    const handleKeydown = (e: KeyboardEvent) => {
+      // Ignore if typing in input
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.key.toLowerCase() === 't') {
+        setViewMode('table');
+      } else if (e.key.toLowerCase() === 'd') {
+        setViewMode('diagram');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeydown);
+    return () => window.removeEventListener('keydown', handleKeydown);
+  }, []);
 
   const handleCopy = () => {
     if (diagram) {
@@ -10,39 +40,110 @@ export function Canvas() {
     }
   };
 
+  // Show loading state
+  if (isCanvasLoading || (isLoading && !diagram)) {
+    return (
+      <div className="h-full bg-gray-50 flex flex-col" data-testid="canvas">
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
+          <div>
+            <h2 className="font-semibold text-primary-dark">Canvas</h2>
+            <p className="text-xs text-gray-500">Entity relationships visualization</p>
+          </div>
+          <ViewModeToggle value={viewMode} onChange={setViewMode} disabled />
+        </div>
+
+        {/* Loading State */}
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <LoadingDots text="Generating diagram..." size="lg" />
+            <p className="text-gray-400 text-xs mt-4">
+              This usually takes 5-10 seconds
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full bg-gray-50 flex flex-col">
+    <div className="h-full bg-gray-50 flex flex-col" data-testid="canvas">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-gray-800">ER Diagram</h2>
+          <h2 className="font-semibold text-primary-dark">Canvas</h2>
           <p className="text-xs text-gray-500">Entity relationships visualization</p>
         </div>
-        {diagram && (
-          <button
-            onClick={handleCopy}
-            className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded hover:bg-blue-50 transition-colors"
-          >
-            Copy Mermaid
-          </button>
+        <div className="flex items-center gap-3">
+          <ViewModeToggle value={viewMode} onChange={setViewMode} />
+          {diagram && (
+            <button
+              onClick={handleCopy}
+              className="text-sm text-primary hover:text-primary-dark px-3 py-1 rounded hover:bg-primary-light/20 transition-colors"
+            >
+              Copy Mermaid
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Metrics Header (FE-005) */}
+      <div className="p-4 pb-0">
+        {metrics ? (
+          <MetricsHeader
+            title={metrics.schema_name || 'Data Analysis'}
+            subtitle="Metadata Overview"
+            totalBadge={{ label: 'Total', value: metrics.total_tables }}
+            metrics={pipelineMetricsToItems(metrics)}
+            isStale={metrics.is_stale}
+            asOf={metrics.as_of}
+          />
+        ) : (
+          <MetricsUnavailable />
         )}
       </div>
 
-      {/* Diagram Area */}
-      <div className="flex-1 overflow-auto">
-        {diagram ? (
-          <MermaidDiagram diagram={diagram} />
+      {/* Content Area */}
+      <div className="flex-1 overflow-auto p-4" data-testid={`canvas-view-${viewMode}`}>
+        {viewMode === 'diagram' ? (
+          diagram ? (
+            <MermaidDiagram diagram={diagram} />
+          ) : (
+            <EmptyState />
+          )
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-400">
-            <div className="text-center">
-              <p className="text-5xl mb-4">📊</p>
-              <p className="font-medium">No diagram yet</p>
-              <p className="text-sm mt-2 max-w-xs">
-                Run the pipeline or ask about table relationships to generate an ER diagram
-              </p>
-            </div>
-          </div>
+          <TableListPlaceholder />
         )}
+      </div>
+    </div>
+  );
+}
+
+// Empty state when no diagram
+function EmptyState() {
+  return (
+    <div className="h-full flex items-center justify-center text-gray-400">
+      <div className="text-center">
+        <p className="text-5xl mb-4">📊</p>
+        <p className="font-medium">No diagram yet</p>
+        <p className="text-sm mt-2 max-w-xs">
+          Run the pipeline or ask about table relationships to generate an ER diagram
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// Placeholder for table list view (to be implemented)
+function TableListPlaceholder() {
+  return (
+    <div className="h-full flex items-center justify-center text-gray-400">
+      <div className="text-center">
+        <p className="text-5xl mb-4">📋</p>
+        <p className="font-medium">Table List View</p>
+        <p className="text-sm mt-2 max-w-xs">
+          Table list view will be available after running analysis
+        </p>
       </div>
     </div>
   );
