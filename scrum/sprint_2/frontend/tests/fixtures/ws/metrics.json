@@ -1,0 +1,50 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Pipeline metrics fixtures for Playwright tests",
+    "full_metrics": {
+        "total_tables": 45,
+        "total_columns": 380,
+        "facts_count": 12,
+        "dimensions_count": 28,
+        "relationships_count": 24,
+        "quality_score": 85,
+        "schema_name": "dm_bs_purchase",
+        "as_of": "2025-12-01T10:00:00Z",
+        "is_stale": false
+    },
+    "partial_metrics": {
+        "total_tables": 25,
+        "total_columns": 180,
+        "facts_count": 5,
+        "dimensions_count": 15,
+        "relationships_count": null,
+        "quality_score": null,
+        "schema_name": "dm_bs_sales"
+    },
+    "stale_metrics": {
+        "total_tables": 45,
+        "total_columns": 380,
+        "facts_count": 12,
+        "dimensions_count": 28,
+        "relationships_count": 24,
+        "quality_score": 78,
+        "schema_name": "dm_bs_purchase",
+        "as_of": "2025-11-30T08:00:00Z",
+        "is_stale": true
+    },
+    "minimal_metrics": {
+        "total_tables": 10,
+        "total_columns": 50,
+        "facts_count": 2,
+        "dimensions_count": 8
+    },
+    "empty_metrics": {
+        "total_tables": 0,
+        "total_columns": 0,
+        "facts_count": 0,
+        "dimensions_count": 0,
+        "relationships_count": 0,
+        "quality_score": null,
+        "schema_name": "empty_schema"
+    }
+}

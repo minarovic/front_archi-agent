@@ -1,0 +1,92 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "WebSocket canvas trigger fixtures for Playwright tests",
+    "diagram_high_confidence": {
+        "type": "agent",
+        "content": "Generating ER diagram for factv_purchase_order...",
+        "timestamp": "2025-12-01T10:30:00Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "er_diagram",
+            "entity_name": "factv_purchase_order",
+            "reason": "📊 Switching to ER diagram view",
+            "confidence": 0.95,
+            "trace_id": "test-trace-001"
+        }
+    },
+    "diagram_low_confidence": {
+        "type": "agent",
+        "content": "I think you might want to see a diagram...",
+        "timestamp": "2025-12-01T10:30:00Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "er_diagram",
+            "entity_name": "factv_purchase_order",
+            "reason": "📊 Maybe switch to ER diagram?",
+            "confidence": 0.45,
+            "trace_id": "test-trace-002"
+        }
+    },
+    "table_list": {
+        "type": "agent",
+        "content": "Found 25 tables in dm_bs_purchase schema...",
+        "timestamp": "2025-12-01T10:31:00Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "table_list",
+            "reason": "📋 Switching to table list view",
+            "confidence": 0.88,
+            "trace_id": "test-trace-003"
+        }
+    },
+    "relationship_graph": {
+        "type": "agent",
+        "content": "Analyzing relationships for factv_purchase_order...",
+        "timestamp": "2025-12-01T10:32:00Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "relationship_graph",
+            "entity_name": "factv_purchase_order",
+            "reason": "🔗 Switching to relationship graph",
+            "confidence": 0.92,
+            "trace_id": "test-trace-004"
+        }
+    },
+    "new_analysis": {
+        "type": "agent",
+        "content": "Running new analysis for relationships...",
+        "timestamp": "2025-12-01T10:33:00Z",
+        "canvas_trigger": {
+            "action": "new_analysis",
+            "view_type": "relationship_graph",
+            "query": "/api/tables/factv_purchase_order/relationships",
+            "reason": "🔄 Loading fresh relationship data",
+            "confidence": 0.85,
+            "trace_id": "test-trace-005"
+        }
+    },
+    "no_trigger": {
+        "type": "agent",
+        "content": "The table factv_purchase_order has 15 columns including measures like quantity and amount.",
+        "timestamp": "2025-12-01T10:34:00Z"
+    },
+    "explicit_no_action": {
+        "type": "agent",
+        "content": "Here are the column details you asked about.",
+        "timestamp": "2025-12-01T10:35:00Z",
+        "canvas_trigger": {
+            "action": "none",
+            "reason": ""
+        }
+    },
+    "legacy_backend": {
+        "type": "agent",
+        "content": "Showing ER diagram (legacy format)...",
+        "timestamp": "2025-12-01T10:36:00Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "er_diagram",
+            "reason": "Legacy backend - no confidence field"
+        }
+    }
+}

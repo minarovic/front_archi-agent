@@ -1,0 +1,53 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Error response fixtures for Playwright tests",
+    "connection_error": {
+        "type": "error",
+        "code": "CONNECTION_LOST",
+        "message": "WebSocket connection lost. Attempting to reconnect...",
+        "retry_count": 0
+    },
+    "connection_error_max_retries": {
+        "type": "error",
+        "code": "MAX_RETRIES_EXCEEDED",
+        "message": "Unable to reconnect after 5 attempts. Please refresh the page.",
+        "retry_count": 5
+    },
+    "authentication_error": {
+        "type": "error",
+        "code": "AUTH_FAILED",
+        "message": "Session expired. Please sign in again.",
+        "requires_action": "redirect_to_login"
+    },
+    "rate_limit_error": {
+        "type": "error",
+        "code": "RATE_LIMITED",
+        "message": "Too many requests. Please wait 30 seconds before sending another message.",
+        "retry_after_ms": 30000
+    },
+    "backend_error": {
+        "type": "error",
+        "code": "BACKEND_ERROR",
+        "message": "An unexpected error occurred. Our team has been notified.",
+        "trace_id": "err_abc123xyz"
+    },
+    "tool_error": {
+        "type": "error",
+        "code": "TOOL_EXECUTION_FAILED",
+        "message": "Failed to execute list_tables: Connection to Collibra timed out.",
+        "tool_name": "list_tables",
+        "trace_id": "err_tool456"
+    },
+    "timeout_error": {
+        "type": "error",
+        "code": "REQUEST_TIMEOUT",
+        "message": "Request timed out after 30 seconds. The operation may still be running.",
+        "timeout_ms": 30000
+    },
+    "validation_error": {
+        "type": "error",
+        "code": "VALIDATION_ERROR",
+        "message": "Invalid request: schema name is required.",
+        "field": "schema_name"
+    }
+}

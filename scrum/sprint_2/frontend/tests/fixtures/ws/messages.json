@@ -1,0 +1,78 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Standard WebSocket message fixtures for Playwright tests",
+    "user_message": {
+        "type": "user",
+        "content": "Show me all FACT tables in dm_bs_purchase schema",
+        "timestamp": "2025-12-01T10:00:00Z"
+    },
+    "user_followup": {
+        "type": "user",
+        "content": "What about the relationships for that table?",
+        "timestamp": "2025-12-01T10:01:00Z",
+        "is_follow_up": true
+    },
+    "user_new_query": {
+        "type": "user",
+        "content": "Analyze dim_supplier table",
+        "timestamp": "2025-12-01T10:02:00Z",
+        "is_follow_up": false
+    },
+    "agent_response": {
+        "type": "agent",
+        "content": "The dm_bs_purchase schema contains 25 tables: 8 FACT tables (factv_purchase_order, factv_invoice, etc.) and 15 DIM tables (dim_supplier, dim_material, etc.).",
+        "timestamp": "2025-12-01T10:00:05Z"
+    },
+    "agent_partial_1": {
+        "type": "agent_partial",
+        "content": "The dm_bs_purchase schema contains "
+    },
+    "agent_partial_2": {
+        "type": "agent_partial",
+        "content": "25 tables: 8 FACT tables"
+    },
+    "agent_partial_3": {
+        "type": "agent_partial",
+        "content": " and 15 DIM tables."
+    },
+    "tool_call": {
+        "type": "tool",
+        "content": "Calling list_tables with schema=dm_bs_purchase",
+        "tool_name": "list_tables",
+        "timestamp": "2025-12-01T10:00:02Z"
+    },
+    "system_message": {
+        "type": "system",
+        "content": "Switching to ER diagram view",
+        "timestamp": "2025-12-01T10:00:10Z"
+    },
+    "agent_with_metrics": {
+        "type": "agent",
+        "content": "Analysis complete. Found 45 tables in the schema.",
+        "timestamp": "2025-12-01T10:00:15Z",
+        "metrics": {
+            "total_tables": 45,
+            "total_columns": 380,
+            "facts_count": 12,
+            "dimensions_count": 28,
+            "quality_score": 85
+        }
+    },
+    "agent_with_trigger_and_metrics": {
+        "type": "agent",
+        "content": "Generating ER diagram...",
+        "timestamp": "2025-12-01T10:00:20Z",
+        "canvas_trigger": {
+            "action": "switch_view",
+            "view_type": "er_diagram",
+            "reason": "Switching to diagram",
+            "confidence": 0.9
+        },
+        "metrics": {
+            "total_tables": 45,
+            "total_columns": 380,
+            "facts_count": 12,
+            "dimensions_count": 28
+        }
+    }
+}
