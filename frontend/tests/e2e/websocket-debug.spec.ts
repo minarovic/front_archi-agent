@@ -25,7 +25,7 @@ test('Debug WebSocket message flow', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   // Type the query that backend says returns diagram + canvas_trigger + metrics
-  const input = page.getByPlaceholder(/what would you like/i);
+  const input = page.getByPlaceholder(/ask about/i);
   await input.fill('Show relationships for factv_purchase_order');
   await input.press('Enter');
 
