@@ -48,6 +48,9 @@ export function Layout() {
   const handleMessage = useCallback((message: Message) => {
     if (message.type === 'agent_partial') {
       updatePartialMessage(message.content);
+    } else if (message.type === 'user') {
+      // Ignore user echo from WebSocket - we already added it locally
+      return;
     } else {
       addMessage(message);
       if (message.type === 'agent' || message.type === 'error') {
