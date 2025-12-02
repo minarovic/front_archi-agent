@@ -11,7 +11,13 @@
 See `docs/VERSION_MATRIX.md` for version rules
 
 ## Dev Setup
-`npm install && npm run sync-api && npm run dev` → http://localhost:5173
+**IMPORTANT:** Frontend is in `frontend/` subdirectory. Always `cd frontend` first!
+
+```bash
+cd frontend
+npm install && npm run sync-api && npm run dev
+```
+→ http://localhost:5173
 
 **Env vars:** `VITE_API_URL=http://localhost:8000`, `VITE_WS_URL=ws://localhost:8000`
 
@@ -37,7 +43,7 @@ See `docs/VERSION_MATRIX.md` for version rules
 **Breaking changes:** CHANGELOG → migration PR → update client/types → E2E tests → coordinate deploy
 
 ## Pitfalls
-❌ Hardcoded URLs | ❌ No sync-api | ❌ `any` types | ❌ Inline styles | ❌ Skip tests | ❌ Inline SVGs
+❌ Hardcoded URLs | ❌ No sync-api | ❌ `any` types | ❌ Inline styles | ❌ Skip tests | ❌ Inline SVGs | ❌ Running npm from root (must be in `frontend/` dir)
 
 ## Sprint 3.1 (Dec 2025)
 **Completed:** InitialView, Canvas Trigger (0.6), View Toggle (T/D), Loading Dots, Metrics Header, Follow-up Badge

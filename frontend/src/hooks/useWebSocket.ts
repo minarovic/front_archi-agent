@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Message } from '../types';
+import { Message, PipelineMetrics } from '../types';
 
 interface UseWebSocketOptions {
   sessionId: string;
   onMessage: (message: Message) => void;
   onDiagram?: (diagram: string) => void;
+  onMetrics?: (metrics: PipelineMetrics) => void;
   onConnected?: (connected: boolean) => void;
 }
 
@@ -12,6 +13,7 @@ export function useWebSocket({
   sessionId,
   onMessage,
   onDiagram,
+  onMetrics,
   onConnected
 }: UseWebSocketOptions) {
   const [isConnected, setIsConnected] = useState(false);
@@ -21,14 +23,16 @@ export function useWebSocket({
   // Store callbacks in refs to avoid reconnection on callback changes
   const onMessageRef = useRef(onMessage);
   const onDiagramRef = useRef(onDiagram);
+  const onMetricsRef = useRef(onMetrics);
   const onConnectedRef = useRef(onConnected);
 
   // Update refs when callbacks change
   useEffect(() => {
     onMessageRef.current = onMessage;
     onDiagramRef.current = onDiagram;
+    onMetricsRef.current = onMetrics;
     onConnectedRef.current = onConnected;
-  }, [onMessage, onDiagram, onConnected]);
+  }, [onMessage, onDiagram, onMetrics, onConnected]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -56,6 +60,12 @@ export function useWebSocket({
           if (data.diagram && onDiagramRef.current) {
             console.log('📊 Diagram received');
             onDiagramRef.current(data.diagram);
+          }
+
+          // Check for metrics in response
+          if (data.metrics && onMetricsRef.current) {
+            console.log('📈 Metrics received:', data.metrics);
+            onMetricsRef.current(data.metrics);
           }
 
           const message: Message = {

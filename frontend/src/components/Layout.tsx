@@ -27,10 +27,12 @@ export function Layout() {
     sessionId,
     messages,
     isLoading,
+    metrics,
     initSession,
     addMessage,
     updatePartialMessage,
     setDiagram,
+    setMetrics,
     setConnected,
     setLoading,
   } = useChatStore();
@@ -63,6 +65,10 @@ export function Layout() {
     setDiagram(diagram);
   }, [setDiagram]);
 
+  const handleMetrics = useCallback((metrics: import('../types').PipelineMetrics) => {
+    setMetrics(metrics);
+  }, [setMetrics]);
+
   const handleConnected = useCallback((connected: boolean) => {
     setConnected(connected);
   }, [setConnected]);
@@ -72,6 +78,7 @@ export function Layout() {
     sessionId: sessionId || '',
     onMessage: handleMessage,
     onDiagram: handleDiagram,
+    onMetrics: handleMetrics,
     onConnected: handleConnected,
   });
 
@@ -124,7 +131,7 @@ export function Layout() {
 
       {/* Canvas - Right */}
       <div className="flex-1 min-w-[400px]">
-        <Canvas />
+        <Canvas metrics={metrics} />
       </div>
     </div>
   );

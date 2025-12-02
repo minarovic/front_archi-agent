@@ -1,11 +1,12 @@
 import { create } from 'zustand';
-import { Message } from '../types';
+import { Message, PipelineMetrics } from '../types';
 
 interface ChatStore {
   sessionId: string | null;
   isConnected: boolean;
   messages: Message[];
   diagram: string | null;
+  metrics: PipelineMetrics | null;
   isLoading: boolean;
   error: string | null;
 
@@ -13,6 +14,7 @@ interface ChatStore {
   addMessage: (message: Message) => void;
   updatePartialMessage: (content: string) => void;
   setDiagram: (diagram: string) => void;
+  setMetrics: (metrics: PipelineMetrics) => void;
   setConnected: (connected: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -24,6 +26,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   isConnected: false,
   messages: [],
   diagram: null,
+  metrics: null,
   isLoading: false,
   error: null,
 
@@ -60,8 +63,9 @@ export const useChatStore = create<ChatStore>((set) => ({
   },
 
   setDiagram: (diagram) => set({ diagram }),
+  setMetrics: (metrics) => set({ metrics }),
   setConnected: (isConnected) => set({ isConnected }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),
-  clearMessages: () => set({ messages: [], diagram: null }),
+  clearMessages: () => set({ messages: [], diagram: null, metrics: null }),
 }));

@@ -47,7 +47,28 @@ React 19, TypeScript 5.3, Vite 7.2.4, TailwindCSS 4.1.17, Zustand, Mermaid.js 10
 **Patterns:** Utility classes for buttons, cards, grids (no CSS modules)
 
 ## Common Mistakes
-❌ Hardcoding API URLs | ❌ Not syncing openapi.json | ❌ Using `any` type | ❌ Inline styles | ❌ No error handling | ❌ WebSocket leaks
+❌ Hardcoding API URLs | ❌ Not syncing openapi.json | ❌ Using `any` type | ❌ Inline styles | ❌ No error handling | ❌ WebSocket leaks | ❌ Running npm from wrong directory
+
+## NPM Command Safety
+**CRITICAL:** This is a monorepo structure. Frontend code is in `frontend/` subdirectory.
+
+**ALWAYS run npm commands from `/frontend` directory:**
+```bash
+cd /Users/marekminarovic/front_archi-agent/frontend && npm run dev
+cd frontend && npm test
+cd frontend && npm run build
+```
+
+**NEVER run from root:**
+```bash
+# ❌ WRONG - will fail with ENOENT package.json
+npm run dev
+
+# ✅ CORRECT
+cd frontend && npm run dev
+```
+
+**Root directory has no package.json** - only workspace structure files (AGENTS.md, README.md, vercel.json)
 
 ## Pre-Commit
 `npm run sync-api && npm run check-api && npm run type-check && npm run lint && npm test && npm run build`
