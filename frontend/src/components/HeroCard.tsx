@@ -22,6 +22,17 @@ interface HeroCardProps {
   children?: React.ReactNode;
 }
 
+// Helper for static grid classes (Tailwind doesn't support dynamic classes)
+const getGridCols = (count: number): string => {
+  const cols: Record<number, string> = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-2',
+    3: 'grid-cols-3',
+    4: 'grid-cols-4',
+  };
+  return cols[Math.min(count, 4)] || 'grid-cols-4';
+};
+
 export function HeroCard({ title, subtitle, badge, metrics, children }: HeroCardProps) {
   return (
     <div className="bg-white overflow-hidden border-t-4 border-skoda-green border border-gray-200 animate-fade-in-scale">
@@ -55,7 +66,7 @@ export function HeroCard({ title, subtitle, badge, metrics, children }: HeroCard
 
       {/* Metrics Grid */}
       {metrics && metrics.length > 0 && (
-        <div className={`grid grid-cols-${Math.min(metrics.length, 4)} divide-x divide-gray-200 border-b border-gray-200`}>
+        <div className={`grid ${getGridCols(metrics.length)} divide-x divide-gray-200 border-b border-gray-200`}>
           {metrics.map((metric, idx) => (
             <div
               key={idx}
