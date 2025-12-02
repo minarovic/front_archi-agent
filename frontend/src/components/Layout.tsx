@@ -4,6 +4,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { ChatPanel } from './ChatPanel';
 import { Canvas } from './Canvas';
 import { InitialView } from './InitialView';
+import { DebugPanel } from './DebugPanel';
 import { Message, CanvasTrigger } from '../types';
 
 // Sample document for demo (hardcoded)
@@ -150,6 +151,9 @@ export function Layout() {
       <div className="flex-1 min-w-[400px]">
         <Canvas metrics={metrics} viewMode={canvasView} onViewModeChange={setCanvasView} />
       </div>
+
+      {/* Debug Panel (dev only) */}
+      <DebugPanel />
     </div>
   );
 }

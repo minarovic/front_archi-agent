@@ -38,7 +38,7 @@ export function Canvas({ metrics, viewMode: controlledViewMode, onViewModeChange
 
     window.addEventListener('keydown', handleKeydown);
     return () => window.removeEventListener('keydown', handleKeydown);
-  }, []);
+  }, [setViewMode]);
 
   const handleCopy = () => {
     if (diagram) {
