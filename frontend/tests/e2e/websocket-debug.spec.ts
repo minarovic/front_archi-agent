@@ -24,8 +24,10 @@ test('Debug WebSocket message flow', async ({ page }) => {
   // Wait for WebSocket to connect
   await page.waitForTimeout(2000);
 
-  // Click first example prompt
-  await page.getByTestId('example-prompt-0').click();
+  // Type the query that backend says returns diagram + canvas_trigger + metrics
+  const input = page.getByPlaceholder(/what would you like/i);
+  await input.fill('Show relationships for factv_purchase_order');
+  await input.press('Enter');
 
   console.log('\n=== Waiting for response (20s) ===\n');
 
