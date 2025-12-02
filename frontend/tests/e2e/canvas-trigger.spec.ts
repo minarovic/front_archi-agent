@@ -1,7 +1,15 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Canvas Trigger Auto-Switch', () => {
-  test('should auto-switch to table view when canvas_trigger with table_list is received', async ({ page }) => {
+  test('should show canvas_trigger logs and debug panel state', async ({ page }) => {
+    // Collect all console logs
+    const consoleLogs: string[] = [];
+    page.on('console', msg => {
+      const text = msg.text();
+      consoleLogs.push(`[${msg.type()}] ${text}`);
+      console.log(`[${msg.type()}] ${text}`);
+    });
+
     // Go to homepage
     await page.goto('http://localhost:3000');
 
@@ -19,32 +27,54 @@ test.describe('Canvas Trigger Auto-Switch', () => {
     // Wait for Canvas to appear
     await expect(page.getByTestId('canvas')).toBeVisible();
 
-    // Check console logs for canvas_trigger
-    const logs: string[] = [];
-    page.on('console', msg => {
-      if (msg.text().includes('Canvas trigger')) {
-        logs.push(msg.text());
-      }
-    });
+    // Check if DebugPanel is visible
+    const debugPanel = page.locator('text=Canvas View:');
+    const debugPanelVisible = await debugPanel.isVisible().catch(() => false);
+    console.log('🐛 Debug Panel visible:', debugPanelVisible);
 
-    // Wait for potential view switch (up to 20 seconds for backend response)
-    await page.waitForTimeout(20000);
+    if (debugPanelVisible) {
+      const debugPanelText = await debugPanel.textContent();
+      console.log('🐛 Debug Panel content:', debugPanelText);
+    }
 
-    // Check if view switched to table (data-testid="canvas-view-table")
+    // Wait for WebSocket response and potential view switch (30 seconds)
+    await page.waitForTimeout(30000);
+
+    // Filter logs for canvas_trigger
+    const canvasTriggerLogs = consoleLogs.filter(log =>
+      log.includes('canvas_trigger') ||
+      log.includes('Canvas trigger') ||
+      log.includes('Auto-switching')
+    );
+
+    console.log('\n📋 All Canvas Trigger Related Logs:');
+    canvasTriggerLogs.forEach(log => console.log(log));
+
+    // Check current view state
     const canvasViewTable = page.getByTestId('canvas-view-table');
     const canvasViewDiagram = page.getByTestId('canvas-view-diagram');
-
-    // Log results
-    console.log('Console logs with canvas_trigger:', logs);
 
     const isTableView = await canvasViewTable.isVisible().catch(() => false);
     const isDiagramView = await canvasViewDiagram.isVisible().catch(() => false);
 
+    console.log('\n📊 Final View State:');
     console.log('Table view visible:', isTableView);
     console.log('Diagram view visible:', isDiagramView);
 
+    // Check debug panel final state
+    if (debugPanelVisible) {
+      const finalDebugText = await debugPanel.textContent();
+      console.log('Debug Panel final state:', finalDebugText);
+    }
+
     // Take screenshot
-    await page.screenshot({ path: 'test-results/canvas-trigger-result.png', fullPage: true });
+    await page.screenshot({ path: 'test-results/canvas-trigger-debug.png', fullPage: true });
+
+    // Report summary
+    console.log('\n✅ TEST SUMMARY:');
+    console.log(`- Found ${canvasTriggerLogs.length} canvas_trigger related logs`);
+    console.log(`- Debug Panel visible: ${debugPanelVisible}`);
+    console.log(`- Current view: ${isTableView ? 'TABLE' : isDiagramView ? 'DIAGRAM' : 'UNKNOWN'}`);
   });
 
   test('should show diagram view by default', async ({ page }) => {

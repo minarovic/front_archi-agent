@@ -25,7 +25,7 @@ export default defineConfig({
   /* Shared settings for all projects */
   use: {
     /* Base URL for page.goto() */
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3000',
 
     /* Collect trace on first retry */
     trace: 'on-first-retry',
@@ -64,9 +64,9 @@ export default defineConfig({
 
   /* Run local dev server before starting tests */
   webServer: {
-    command: 'npm run dev -- --port 3001',
-    url: 'http://localhost:3001',
-    reuseExistingServer: true, // Always reuse - we start servers manually
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI, // Reuse existing server locally, start fresh in CI
     stdout: 'ignore',
     stderr: 'pipe',
     timeout: 120 * 1000, // 2 minutes timeout
