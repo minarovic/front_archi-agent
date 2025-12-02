@@ -4,7 +4,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { ChatPanel } from './ChatPanel';
 import { Canvas } from './Canvas';
 import { InitialView } from './InitialView';
-import { Message } from '../types';
+import { Message, CanvasTrigger, ViewMode } from '../types';
 
 // Sample document for demo (hardcoded)
 const SAMPLE_DOCUMENT = `# Business Request: Purchase Order Analysis
@@ -28,11 +28,13 @@ export function Layout() {
     messages,
     isLoading,
     metrics,
+    canvasView,
     initSession,
     addMessage,
     updatePartialMessage,
     setDiagram,
     setMetrics,
+    setCanvasView,
     setConnected,
     setLoading,
   } = useChatStore();
@@ -69,6 +71,20 @@ export function Layout() {
     setMetrics(metrics);
   }, [setMetrics]);
 
+  const handleCanvasTrigger = useCallback((trigger: CanvasTrigger) => {
+    // Auto-switch only if confidence >= 0.6
+    if (trigger.action === 'switch_view' && trigger.confidence && trigger.confidence >= 0.6) {
+      console.log('🎯 Auto-switching canvas view:', trigger.view_type, 'confidence:', trigger.confidence);
+      
+      // Map view_type to ViewMode
+      if (trigger.view_type === 'table_list') {
+        setCanvasView('table');
+      } else if (trigger.view_type === 'er_diagram') {
+        setCanvasView('diagram');
+      }
+    }
+  }, [setCanvasView]);
+
   const handleConnected = useCallback((connected: boolean) => {
     setConnected(connected);
   }, [setConnected]);
@@ -79,6 +95,7 @@ export function Layout() {
     onMessage: handleMessage,
     onDiagram: handleDiagram,
     onMetrics: handleMetrics,
+    onCanvasTrigger: handleCanvasTrigger,
     onConnected: handleConnected,
   });
 
@@ -131,7 +148,7 @@ export function Layout() {
 
       {/* Canvas - Right */}
       <div className="flex-1 min-w-[400px]">
-        <Canvas metrics={metrics} />
+        <Canvas metrics={metrics} viewMode={canvasView} onViewModeChange={setCanvasView} />
       </div>
     </div>
   );

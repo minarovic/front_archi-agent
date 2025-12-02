@@ -70,7 +70,7 @@ function MessageBubble({ message, messageIndex }: MessageBubbleProps) {
         </div>
 
         {message.toolName && (
-          <p className="text-xs mt-2 opacity-70">🔧 {message.toolName}</p>
+          <p className="text-xs mt-2 opacity-70">Tool: {message.toolName}</p>
         )}
       </div>
     </div>

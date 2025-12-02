@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Message, PipelineMetrics } from '../types';
+import { Message, PipelineMetrics, ViewMode } from '../types';
 
 interface ChatStore {
   sessionId: string | null;
@@ -7,6 +7,7 @@ interface ChatStore {
   messages: Message[];
   diagram: string | null;
   metrics: PipelineMetrics | null;
+  canvasView: ViewMode;
   isLoading: boolean;
   error: string | null;
 
@@ -15,6 +16,7 @@ interface ChatStore {
   updatePartialMessage: (content: string) => void;
   setDiagram: (diagram: string) => void;
   setMetrics: (metrics: PipelineMetrics) => void;
+  setCanvasView: (view: ViewMode) => void;
   setConnected: (connected: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
@@ -27,6 +29,7 @@ export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   diagram: null,
   metrics: null,
+  canvasView: 'diagram',
   isLoading: false,
   error: null,
 
@@ -64,6 +67,7 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   setDiagram: (diagram) => set({ diagram }),
   setMetrics: (metrics) => set({ metrics }),
+  setCanvasView: (canvasView) => set({ canvasView }),
   setConnected: (isConnected) => set({ isConnected }),
   setLoading: (isLoading) => set({ isLoading }),
   setError: (error) => set({ error, isLoading: false }),

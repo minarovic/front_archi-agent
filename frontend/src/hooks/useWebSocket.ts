@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Message, PipelineMetrics } from '../types';
+import { Message, PipelineMetrics, CanvasTrigger } from '../types';
 
 interface UseWebSocketOptions {
   sessionId: string;
   onMessage: (message: Message) => void;
   onDiagram?: (diagram: string) => void;
   onMetrics?: (metrics: PipelineMetrics) => void;
+  onCanvasTrigger?: (trigger: CanvasTrigger) => void;
   onConnected?: (connected: boolean) => void;
 }
 
@@ -14,6 +15,7 @@ export function useWebSocket({
   onMessage,
   onDiagram,
   onMetrics,
+  onCanvasTrigger,
   onConnected
 }: UseWebSocketOptions) {
   const [isConnected, setIsConnected] = useState(false);
@@ -24,6 +26,7 @@ export function useWebSocket({
   const onMessageRef = useRef(onMessage);
   const onDiagramRef = useRef(onDiagram);
   const onMetricsRef = useRef(onMetrics);
+  const onCanvasTriggerRef = useRef(onCanvasTrigger);
   const onConnectedRef = useRef(onConnected);
 
   // Update refs when callbacks change
@@ -31,8 +34,9 @@ export function useWebSocket({
     onMessageRef.current = onMessage;
     onDiagramRef.current = onDiagram;
     onMetricsRef.current = onMetrics;
+    onCanvasTriggerRef.current = onCanvasTrigger;
     onConnectedRef.current = onConnected;
-  }, [onMessage, onDiagram, onMetrics, onConnected]);
+  }, [onMessage, onDiagram, onMetrics, onCanvasTrigger, onConnected]);
 
   useEffect(() => {
     if (!sessionId) return;
@@ -66,6 +70,12 @@ export function useWebSocket({
           if (data.metrics && onMetricsRef.current) {
             console.log('📈 Metrics received:', data.metrics);
             onMetricsRef.current(data.metrics);
+          }
+
+          // Check for canvas_trigger in response
+          if (data.canvas_trigger && onCanvasTriggerRef.current) {
+            console.log('🎯 Canvas trigger received:', data.canvas_trigger);
+            onCanvasTriggerRef.current(data.canvas_trigger);
           }
 
           const message: Message = {
