@@ -16,7 +16,7 @@ interface CanvasProps {
 export function Canvas({ metrics, viewMode: controlledViewMode, onViewModeChange, isCanvasLoading }: CanvasProps) {
   const { diagram, isLoading } = useChatStore();
   const [internalViewMode, setInternalViewMode] = useState<ViewMode>('diagram');
-  
+
   // Use controlled viewMode if provided, otherwise use internal state
   const viewMode = controlledViewMode ?? internalViewMode;
   const setViewMode = onViewModeChange ?? setInternalViewMode;

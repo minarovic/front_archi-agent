@@ -4,7 +4,7 @@ import { useWebSocket } from '../hooks/useWebSocket';
 import { ChatPanel } from './ChatPanel';
 import { Canvas } from './Canvas';
 import { InitialView } from './InitialView';
-import { Message, CanvasTrigger, ViewMode } from '../types';
+import { Message, CanvasTrigger } from '../types';
 
 // Sample document for demo (hardcoded)
 const SAMPLE_DOCUMENT = `# Business Request: Purchase Order Analysis
@@ -75,7 +75,7 @@ export function Layout() {
     // Auto-switch only if confidence >= 0.6
     if (trigger.action === 'switch_view' && trigger.confidence && trigger.confidence >= 0.6) {
       console.log('🎯 Auto-switching canvas view:', trigger.view_type, 'confidence:', trigger.confidence);
-      
+
       // Map view_type to ViewMode
       if (trigger.view_type === 'table_list') {
         setCanvasView('table');
