@@ -86,7 +86,7 @@ test.describe('Chat Integration with Railway Backend', () => {
     // Wait for LLM response - can take 30-60 seconds
     // Wait until "Thinking..." disappears or we see a response
     await page.waitForTimeout(5000);
-    
+
     // Take screenshot of initial state
     await page.screenshot({
       path: 'test-results/chat-canvas-loading.png',
@@ -108,10 +108,10 @@ test.describe('Chat Integration with Railway Backend', () => {
     // The diagram area should show something - either diagram, loading, or placeholder
     const canvasContent = page.locator('text=Canvas');
     await expect(canvasContent).toBeVisible({ timeout: 5000 });
-    
+
     // Log what we see for debugging
     const pageContent = await page.textContent('body');
-    console.log('Canvas area contains:', 
+    console.log('Canvas area contains:',
       pageContent?.includes('Generating') ? 'Still generating...' :
       pageContent?.includes('No diagram') ? 'No diagram yet' :
       pageContent?.includes('mermaid') ? 'Mermaid diagram' : 'Unknown state'
