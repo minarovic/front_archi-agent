@@ -45,16 +45,16 @@ function MessageBubble({ message, messageIndex }: MessageBubbleProps) {
       data-testid={`${message.type}-message`}
     >
       <div
-        className={`max-w-[85%] rounded-lg px-4 py-2 ${
+        className={`max-w-[85%] px-4 py-3 ${
           isUser
-            ? 'bg-primary-dark text-white'
+            ? 'bg-[#0E3A2F] text-white border border-[#0E3A2F]'
             : isError
-            ? 'bg-red-100 text-red-800 border border-red-200'
-            : 'bg-gray-100 text-gray-800'
+            ? 'bg-red-50 text-red-800 border border-red-200'
+            : 'bg-white text-gray-900 border border-gray-200'
         } ${isPartial ? 'animate-pulse' : ''}`}
       >
         <div className="flex items-start justify-between gap-2">
-          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+          <p className="whitespace-pre-wrap text-lg leading-relaxed">{message.content}</p>
 
           {/* FE-006: Follow-up Badge */}
           {showFollowUp && (

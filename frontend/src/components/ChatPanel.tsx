@@ -23,35 +23,32 @@ export function ChatPanel({ onSend }: ChatPanelProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-gray-200" data-testid="chat-panel">
+    <div className="flex flex-col h-full bg-gray-50 overflow-hidden border border-gray-200" data-testid="chat-panel">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-primary-dark">
-        <div>
-          <h2 className="font-semibold text-white">MCOP Explorer</h2>
-          <p className="text-xs text-primary-light">Metadata exploration agent</p>
-        </div>
+      <div className="bg-[#0E3A2F] border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white">MCOP Explorer</h2>
         <div className="flex items-center gap-2">
           <span
-            className={`w-2 h-2 rounded-full ${isConnected ? 'bg-primary-light' : 'bg-red-500'}`}
+            className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#4BA82E]' : 'bg-red-400'}`}
             title={isConnected ? 'Connected' : 'Disconnected'}
           />
-          <span className="text-xs text-primary-light">
+          <span className="text-sm font-medium text-white">
             {isConnected ? 'Connected' : 'Connecting...'}
           </span>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-6">
         <MessageList messages={messages} />
 
         {/* FE-004: Loading indicator with animated dots */}
         {isLoading && (
-          <div className="flex items-start gap-3 py-4">
-            <div className="w-8 h-8 rounded-full bg-primary-dark flex items-center justify-center text-white text-sm">
+          <div className="flex items-start gap-4 py-4">
+            <div className="w-10 h-10 flex items-center justify-center text-xl bg-[#0E3A2F] text-white">
               🤖
             </div>
-            <div className="bg-gray-100 rounded-lg px-4 py-3">
+            <div className="bg-white border border-gray-200 px-5 py-3">
               <LoadingDots text="Thinking..." />
             </div>
           </div>
@@ -61,7 +58,7 @@ export function ChatPanel({ onSend }: ChatPanelProps) {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-gray-50">
+      <div className="p-4 border-t border-gray-200 bg-white">
         <MessageInput
           onSend={onSend}
           disabled={!isConnected || isLoading}

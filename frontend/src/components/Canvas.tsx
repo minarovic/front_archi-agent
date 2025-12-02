@@ -43,22 +43,19 @@ export function Canvas({ metrics, isCanvasLoading }: CanvasProps) {
   // Show loading state
   if (isCanvasLoading || (isLoading && !diagram)) {
     return (
-      <div className="h-full bg-gray-50 flex flex-col" data-testid="canvas">
+      <div className="h-full flex flex-col bg-white" data-testid="canvas">
         {/* Header */}
         <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
-          <div>
-            <h2 className="font-semibold text-primary-dark">Canvas</h2>
-            <p className="text-xs text-gray-500">Entity relationships visualization</p>
-          </div>
+          <h2 className="text-lg font-bold text-[#0E3A2F]">Canvas</h2>
           <ViewModeToggle value={viewMode} onChange={setViewMode} disabled />
         </div>
 
         {/* Loading State */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center">
+          <div className="text-center bg-white border border-gray-200 px-12 py-10">
             <LoadingDots text="Generating diagram..." size="lg" />
-            <p className="text-gray-400 text-xs mt-4">
-              This usually takes 5-10 seconds
+            <p className="text-sm mt-6 text-gray-500">
+              🤔 This usually takes 5-10 seconds
             </p>
           </div>
         </div>
@@ -67,19 +64,16 @@ export function Canvas({ metrics, isCanvasLoading }: CanvasProps) {
   }
 
   return (
-    <div className="h-full bg-gray-50 flex flex-col" data-testid="canvas">
+    <div className="h-full flex flex-col bg-white" data-testid="canvas">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
-        <div>
-          <h2 className="font-semibold text-primary-dark">Canvas</h2>
-          <p className="text-xs text-gray-500">Entity relationships visualization</p>
-        </div>
-        <div className="flex items-center gap-3">
+        <h2 className="text-lg font-bold text-[#0E3A2F]">Canvas</h2>
+        <div className="flex items-center gap-4">
           <ViewModeToggle value={viewMode} onChange={setViewMode} />
           {diagram && (
             <button
               onClick={handleCopy}
-              className="text-sm text-primary hover:text-primary-dark px-3 py-1 rounded hover:bg-primary-light/20 transition-colors"
+              className="text-sm font-semibold px-4 py-2 border border-[#4BA82E] text-[#4BA82E] bg-white"
             >
               Copy Mermaid
             </button>

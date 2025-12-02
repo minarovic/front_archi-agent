@@ -16,13 +16,13 @@ interface ViewModeToggleProps {
 
 export function ViewModeToggle({ value, onChange, disabled }: ViewModeToggleProps) {
   const baseClasses = `
-    px-4 py-2 text-sm font-semibold rounded-lg transition-all
+    px-4 py-2 text-sm font-semibold transition-all
     disabled:opacity-50 disabled:cursor-not-allowed
-    focus:outline-none focus:ring-2 focus:ring-primary/20
+    focus:outline-none
   `;
 
-  const activeClasses = 'bg-primary text-white border border-primary';
-  const inactiveClasses = 'bg-white text-gray-700 border border-gray-300 hover:border-primary';
+  const activeClasses = 'bg-[#0E3A2F] text-white border border-[#0E3A2F]';
+  const inactiveClasses = 'bg-white text-gray-700 border border-gray-300';
 
   return (
     <div className="flex gap-2" role="group" aria-label="View mode" data-testid="view-mode-toggle">
