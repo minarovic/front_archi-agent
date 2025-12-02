@@ -1,18 +1,22 @@
 /** @type {import('tailwindcss').Config} */
 
 /**
- * MCOP Frontend - Tailwind Configuration
- * Based on Škoda Supply Chain Design System (Sprint 3.1)
+ * Supply Chain Frontend - Tailwind Configuration
+ *
+ * Kompletná Tailwind konfigurácia pre Škoda Supply Chain design systém.
+ * Skopíruj tento súbor do nového projektu ako tailwind.config.js
  */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       // =====================================================================
-      // COLORS (Škoda Brand)
+      // COLORS
       // =====================================================================
       colors: {
         // Škoda Brand Colors
@@ -25,13 +29,10 @@ export default {
           'text': '#2D7A1C',         // Text na svetlom zelenom
         },
 
-        // Semantic aliases (backward compatibility)
-        'primary': {
-          'dark': '#0E3A2F',
-          'DEFAULT': '#4BA82E',
-          'light': '#78FAAE',
-          'muted': '#1a5a42',
-        },
+        // Semantic aliases
+        'primary': '#4BA82E',
+        'primary-dark': '#0E3A2F',
+        'primary-light': '#78FAAE',
 
         // Risk Colors
         'risk': {
@@ -51,8 +52,16 @@ export default {
       // TYPOGRAPHY
       // =====================================================================
       fontFamily: {
-        'sans': ['var(--font-geist-sans)', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        'sans': ['var(--font-geist-sans)', 'Arial', 'Helvetica', 'sans-serif'],
         'mono': ['var(--font-geist-mono)', 'Courier New', 'monospace'],
+      },
+
+      fontSize: {
+        // Custom sizes if needed (Tailwind defaults are usually sufficient)
+      },
+
+      fontWeight: {
+        // Tailwind defaults: 400 (normal), 500 (medium), 600 (semibold), 700 (bold)
       },
 
       lineHeight: {
@@ -67,10 +76,25 @@ export default {
       },
 
       // =====================================================================
+      // SPACING
+      // =====================================================================
+      spacing: {
+        // Tailwind defaults are sufficient (0.5, 1, 1.5, 2, 2.5, 3, 4, 5, 6, 8...)
+      },
+
+      // =====================================================================
       // SHADOWS
       // =====================================================================
       boxShadow: {
         'node': '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
+        // Tailwind defaults: sm, DEFAULT, md, lg, xl, 2xl
+      },
+
+      // =====================================================================
+      // BORDER RADIUS
+      // =====================================================================
+      borderRadius: {
+        // Tailwind defaults: none, sm, DEFAULT (4px), md (6px), lg (8px), xl, 2xl, 3xl, full
       },
 
       // =====================================================================
@@ -78,7 +102,6 @@ export default {
       // =====================================================================
       animation: {
         'bounce': 'bounce 1s infinite',
-        'bounce-slow': 'bounce 1.4s infinite',
         'spin': 'spin 1s linear infinite',
         'fade-in': 'fadeIn 500ms ease-in-out',
         'slide-in': 'slideIn 500ms ease-in-out',
@@ -121,19 +144,33 @@ export default {
       },
 
       // =====================================================================
-      // WIDTHS / HEIGHTS
+      // MAX-WIDTH (for containers)
       // =====================================================================
       maxWidth: {
-        'chat': '600px',
+        'chat': '600px',  // Chat panel width
       },
+
+      // =====================================================================
+      // WIDTH
+      // =====================================================================
       width: {
-        'chat': '600px',
+        'chat': '600px',  // Fixed chat panel width
       },
+
+      // =====================================================================
+      // HEIGHT
+      // =====================================================================
       height: {
-        'graph': '600px',
-        'map': '500px',
+        'graph': '600px',  // React Flow graph height
+        'map': '500px',    // Map view height
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Uncomment if using forms
+    // require('@tailwindcss/forms'),
+
+    // Uncomment if using typography prose
+    // require('@tailwindcss/typography'),
+  ],
 }

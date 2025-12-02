@@ -43,16 +43,16 @@ export function Canvas({ metrics, isCanvasLoading }: CanvasProps) {
   // Show loading state
   if (isCanvasLoading || (isLoading && !diagram)) {
     return (
-      <div className="h-full flex flex-col bg-white" data-testid="canvas">
+      <div className="h-full flex flex-col bg-gray-50" data-testid="canvas">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
-          <h2 className="text-lg font-bold text-[#0E3A2F]">Canvas</h2>
+        <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between">
+          <h2 className="text-xl font-bold text-skoda-dark">Canvas</h2>
           <ViewModeToggle value={viewMode} onChange={setViewMode} disabled />
         </div>
 
         {/* Loading State */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-center bg-white border border-gray-200 px-12 py-10">
+          <div className="text-center card px-12 py-10">
             <LoadingDots text="Generating diagram..." size="lg" />
             <p className="text-sm mt-6 text-gray-500">
               🤔 This usually takes 5-10 seconds
@@ -64,18 +64,18 @@ export function Canvas({ metrics, isCanvasLoading }: CanvasProps) {
   }
 
   return (
-    <div className="h-full flex flex-col bg-white" data-testid="canvas">
+    <div className="h-full flex flex-col bg-gray-50" data-testid="canvas">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
-        <h2 className="text-lg font-bold text-[#0E3A2F]">Canvas</h2>
+      <div className="px-6 py-4 border-b border-gray-200 bg-white flex items-center justify-between">
+        <h2 className="text-xl font-bold text-skoda-dark">Canvas</h2>
         <div className="flex items-center gap-4">
           <ViewModeToggle value={viewMode} onChange={setViewMode} />
           {diagram && (
             <button
               onClick={handleCopy}
-              className="text-sm font-semibold px-4 py-2 border border-[#4BA82E] text-[#4BA82E] bg-white"
+              className="btn-secondary"
             >
-              Copy Mermaid
+              📋 Copy Mermaid
             </button>
           )}
         </div>
@@ -118,9 +118,9 @@ function EmptyState() {
   return (
     <div className="h-full flex items-center justify-center text-gray-400">
       <div className="text-center">
-        <p className="text-5xl mb-4">📊</p>
-        <p className="font-medium">No diagram yet</p>
-        <p className="text-sm mt-2 max-w-xs">
+        <p className="text-6xl mb-4">📊</p>
+        <p className="text-xl font-semibold text-gray-600 mb-2">No diagram yet</p>
+        <p className="text-sm max-w-xs text-gray-500">
           Run the pipeline or ask about table relationships to generate an ER diagram
         </p>
       </div>
@@ -133,9 +133,9 @@ function TableListPlaceholder() {
   return (
     <div className="h-full flex items-center justify-center text-gray-400">
       <div className="text-center">
-        <p className="text-5xl mb-4">📋</p>
-        <p className="font-medium">Table List View</p>
-        <p className="text-sm mt-2 max-w-xs">
+        <p className="text-6xl mb-4">📋</p>
+        <p className="text-xl font-semibold text-gray-600 mb-2">Table List View</p>
+        <p className="text-sm max-w-xs text-gray-500">
           Table list view will be available after running analysis
         </p>
       </div>

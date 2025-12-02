@@ -45,16 +45,23 @@ function MessageBubble({ message, messageIndex }: MessageBubbleProps) {
       data-testid={`${message.type}-message`}
     >
       <div
-        className={`max-w-[85%] px-4 py-3 ${
+        className={`max-w-[85%] px-5 py-3 border ${
           isUser
-            ? 'bg-[#0E3A2F] text-white border border-[#0E3A2F]'
+            ? 'bg-white text-gray-900 border-gray-200'
             : isError
-            ? 'bg-red-50 text-red-800 border border-red-200'
-            : 'bg-white text-gray-900 border border-gray-200'
+            ? 'bg-red-50 text-red-800 border-red-200'
+            : 'bg-white text-gray-900 border-gray-200'
         } ${isPartial ? 'animate-pulse' : ''}`}
       >
+        {/* Role Label */}
+        <p className={`text-xs font-semibold uppercase tracking-wider mb-2 ${
+          isUser ? 'text-skoda-green' : isError ? 'text-red-600' : 'text-gray-500'
+        }`}>
+          {isUser ? 'You' : 'Assistant'}
+        </p>
+
         <div className="flex items-start justify-between gap-2">
-          <p className="whitespace-pre-wrap text-lg leading-relaxed">{message.content}</p>
+          <p className="message-text">{message.content}</p>
 
           {/* FE-006: Follow-up Badge */}
           {showFollowUp && (
@@ -63,7 +70,7 @@ function MessageBubble({ message, messageIndex }: MessageBubbleProps) {
         </div>
 
         {message.toolName && (
-          <p className="text-xs mt-1 opacity-70">🔧 {message.toolName}</p>
+          <p className="text-xs mt-2 opacity-70">🔧 {message.toolName}</p>
         )}
       </div>
     </div>

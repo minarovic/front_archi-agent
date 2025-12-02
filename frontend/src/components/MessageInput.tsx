@@ -32,12 +32,12 @@ export function MessageInput({ onSend, disabled, placeholder }: Props) {
         onKeyDown={handleKeyDown}
         disabled={disabled}
         placeholder={placeholder}
-        className="flex-1 p-4 border border-gray-300 focus:outline-none focus:border-[#0E3A2F] disabled:bg-gray-100 text-base text-gray-900 placeholder:text-gray-400"
+        className="input flex-1 py-4"
       />
       <button
         onClick={handleSend}
         disabled={disabled || !input.trim()}
-        className="bg-[#0E3A2F] text-white px-8 py-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-[#0E3A2F]"
+        className="btn-primary px-6"
       >
         <span>Send</span>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">

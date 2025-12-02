@@ -23,32 +23,32 @@ export function ChatPanel({ onSend }: ChatPanelProps) {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden border border-gray-200" data-testid="chat-panel">
+    <div className="chat-container" data-testid="chat-panel">
       {/* Header */}
-      <div className="bg-[#0E3A2F] border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">MCOP Explorer</h2>
+      <div className="chat-header">
+        <h2 className="chat-header-title">MCOP Explorer</h2>
         <div className="flex items-center gap-2">
           <span
-            className={`w-2 h-2 rounded-full ${isConnected ? 'bg-[#4BA82E]' : 'bg-red-400'}`}
+            className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-skoda-green' : 'bg-red-500'}`}
             title={isConnected ? 'Connected' : 'Disconnected'}
           />
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-gray-600">
             {isConnected ? 'Connected' : 'Connecting...'}
           </span>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6">
+      <div className="message-list">
         <MessageList messages={messages} />
 
         {/* FE-004: Loading indicator with animated dots */}
         {isLoading && (
           <div className="flex items-start gap-4 py-4">
-            <div className="w-10 h-10 flex items-center justify-center text-xl bg-[#0E3A2F] text-white">
+            <div className="w-10 h-10 flex items-center justify-center text-xl bg-skoda-dark text-white">
               🤖
             </div>
-            <div className="bg-white border border-gray-200 px-5 py-3">
+            <div className="bg-white border border-gray-200 px-5 py-3 shadow-md">
               <LoadingDots text="Thinking..." />
             </div>
           </div>
@@ -58,7 +58,7 @@ export function ChatPanel({ onSend }: ChatPanelProps) {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-gray-200 bg-white">
+      <div className="chat-input-area">
         <MessageInput
           onSend={onSend}
           disabled={!isConnected || isLoading}

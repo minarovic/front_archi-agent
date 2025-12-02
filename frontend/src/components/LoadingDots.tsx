@@ -9,13 +9,13 @@ interface LoadingDotsProps {
 }
 
 // ============================================
-// LoadingDots Component (FE-004)
+// LoadingDots Component (FE-004 + Sprint 3.1 Design)
 // ============================================
 
 export function LoadingDots({
   text = 'Thinking...',
   size = 'md',
-  color = '#4BA82E'  // primary accent
+  color = 'var(--color-primary)'  // Škoda Green
 }: LoadingDotsProps) {
   const sizeClasses = {
     sm: 'w-1.5 h-1.5',
@@ -26,21 +26,21 @@ export function LoadingDots({
   const dotClass = sizeClasses[size];
 
   return (
-    <div className="flex items-center space-x-2" data-testid="loading-dots">
+    <div className="thinking-dots" data-testid="loading-dots">
       <div
-        className={`${dotClass} rounded-full animate-bounce`}
+        className={`thinking-dot ${dotClass}`}
         style={{ backgroundColor: color, animationDelay: '0ms' }}
       />
       <div
-        className={`${dotClass} rounded-full animate-bounce`}
+        className={`thinking-dot ${dotClass}`}
         style={{ backgroundColor: color, animationDelay: '150ms' }}
       />
       <div
-        className={`${dotClass} rounded-full animate-bounce`}
+        className={`thinking-dot ${dotClass}`}
         style={{ backgroundColor: color, animationDelay: '300ms' }}
       />
       {text && (
-        <span className="text-gray-500 ml-2 text-sm">{text}</span>
+        <span className="text-gray-500 ml-3 text-sm font-medium">{text}</span>
       )}
     </div>
   );
@@ -52,18 +52,18 @@ export function LoadingDots({
 
 export function LoadingDotsInline() {
   return (
-    <span className="inline-flex items-center space-x-1" data-testid="loading-dots-inline">
+    <span className="inline-flex items-center gap-1" data-testid="loading-dots-inline">
       <span
-        className="w-1 h-1 rounded-full bg-primary animate-bounce"
-        style={{ animationDelay: '0ms' }}
+        className="w-1 h-1 rounded-full animate-bounce"
+        style={{ backgroundColor: 'var(--color-primary)', animationDelay: '0ms' }}
       />
       <span
-        className="w-1 h-1 rounded-full bg-primary animate-bounce"
-        style={{ animationDelay: '150ms' }}
+        className="w-1 h-1 rounded-full animate-bounce"
+        style={{ backgroundColor: 'var(--color-primary)', animationDelay: '150ms' }}
       />
       <span
-        className="w-1 h-1 rounded-full bg-primary animate-bounce"
-        style={{ animationDelay: '300ms' }}
+        className="w-1 h-1 rounded-full animate-bounce"
+        style={{ backgroundColor: 'var(--color-primary)', animationDelay: '300ms' }}
       />
     </span>
   );

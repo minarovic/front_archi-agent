@@ -7,19 +7,13 @@ interface FollowUpBadgeProps {
 }
 
 // ============================================
-// FollowUpBadge Component (FE-006)
+// FollowUpBadge Component (FE-006 + Sprint 3.1 Design)
 // ============================================
 
 export function FollowUpBadge({ className = '' }: FollowUpBadgeProps) {
   return (
     <span
-      className={`
-        inline-flex items-center gap-1
-        text-xs font-medium
-        bg-blue-100 text-blue-700
-        px-2 py-0.5 rounded
-        ${className}
-      `}
+      className={`badge-followup ${className}`}
       title="This question uses context from the previous messages"
       data-testid="follow-up-badge"
     >

@@ -28,7 +28,7 @@ const formatMetricValue = (value: number | string | undefined | null): string =>
 };
 
 // ============================================
-// MetricsHeader Component (FE-005)
+// MetricsHeader Component (FE-005 + Sprint 3.1 Hero Pattern)
 // ============================================
 
 export function MetricsHeader({
@@ -46,19 +46,19 @@ export function MetricsHeader({
 
   return (
     <div
-      className="bg-white overflow-hidden border-t-2 border-primary border border-gray-200 rounded-lg"
+      className="hero-header overflow-hidden"
       data-testid="metrics-header"
     >
       {/* Dark Header */}
-      <div className="bg-primary-dark px-6 py-4">
+      <div className="hero-header-dark">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-white mb-1">{title}</h2>
+            <h2 className="hero-header-title">{title}</h2>
             {subtitle && (
-              <p className="text-primary-light text-sm font-medium">{subtitle}</p>
+              <p className="hero-header-subtitle">{subtitle}</p>
             )}
             {isStale && (
-              <p className="text-yellow-300 text-xs mt-1 flex items-center gap-1">
+              <p className="text-yellow-300 text-xs mt-2 flex items-center gap-1">
                 <span>⚠️</span>
                 <span>Data may be stale</span>
                 {asOf && <span>• Last updated: {new Date(asOf).toLocaleTimeString()}</span>}
@@ -67,18 +67,18 @@ export function MetricsHeader({
           </div>
 
           {totalBadge && (
-            <div className="bg-primary-muted px-4 py-2 rounded border border-primary-light">
-              <p className="text-primary-light text-xs uppercase tracking-wide mb-0.5">
+            <div className="bg-skoda-extra-dark px-5 py-3 border border-skoda-light">
+              <p className="text-skoda-light text-xs uppercase tracking-wider mb-1">
                 {totalBadge.label}
               </p>
-              <p className="text-white text-xl font-bold">{totalBadge.value}</p>
+              <p className="text-white text-2xl font-bold">{totalBadge.value}</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Metrics Grid */}
-      <div className={`grid grid-cols-${Math.min(metrics.length, 4)} divide-x divide-gray-200 border-b border-gray-200`}>
+      <div className="grid grid-cols-4 divide-x divide-gray-200 bg-white">
         {metrics.map((metric, index) => (
           <MetricCard key={index} {...metric} />
         ))}
@@ -105,9 +105,9 @@ function MetricCard({ label, value, trend }: MetricItem) {
   };
 
   return (
-    <div className="p-4 text-center bg-gradient-to-br from-white to-gray-50">
-      <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-3xl font-bold text-primary mb-1">{formatMetricValue(value)}</p>
+    <div className="p-5 text-center">
+      <p className="metric-label">{label}</p>
+      <p className="text-3xl font-bold text-skoda-green mb-1">{formatMetricValue(value)}</p>
       {trend && (
         <div className={`flex items-center justify-center gap-1 text-xs ${trendColor[trend.direction]}`}>
           <span>{trendIcon[trend.direction]}</span>
@@ -124,13 +124,13 @@ function MetricCard({ label, value, trend }: MetricItem) {
 
 function MetricsHeaderSkeleton() {
   return (
-    <div className="bg-white overflow-hidden border border-gray-200 rounded-lg animate-pulse" data-testid="metrics-skeleton">
-      <div className="bg-gray-200 h-20" />
+    <div className="bg-white overflow-hidden border border-gray-200 animate-pulse" data-testid="metrics-skeleton">
+      <div className="bg-gray-300 h-24" />
       <div className="grid grid-cols-4 divide-x divide-gray-200">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-4 text-center">
-            <div className="h-3 bg-gray-200 rounded w-16 mx-auto mb-2" />
-            <div className="h-8 bg-gray-200 rounded w-12 mx-auto" />
+          <div key={i} className="p-5 text-center">
+            <div className="h-3 bg-gray-200 w-16 mx-auto mb-3" />
+            <div className="h-8 bg-gray-200 w-12 mx-auto" />
           </div>
         ))}
       </div>
@@ -145,7 +145,7 @@ function MetricsHeaderSkeleton() {
 export function MetricsUnavailable() {
   return (
     <div
-      className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center"
+      className="bg-gray-50 border border-gray-200 p-6 text-center"
       data-testid="metrics-unavailable"
     >
       <p className="text-gray-500 text-sm">

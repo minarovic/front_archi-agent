@@ -11,25 +11,18 @@ interface ViewModeToggleProps {
 }
 
 // ============================================
-// ViewModeToggle Component (FE-003)
+// ViewModeToggle Component (FE-003 + Sprint 3.1 Design)
 // ============================================
 
 export function ViewModeToggle({ value, onChange, disabled }: ViewModeToggleProps) {
-  const baseClasses = `
-    px-4 py-2 text-sm font-semibold transition-all
-    disabled:opacity-50 disabled:cursor-not-allowed
-    focus:outline-none
-  `;
-
-  const activeClasses = 'bg-[#0E3A2F] text-white border border-[#0E3A2F]';
-  const inactiveClasses = 'bg-white text-gray-700 border border-gray-300';
-
   return (
-    <div className="flex gap-2" role="group" aria-label="View mode" data-testid="view-mode-toggle">
+    <div className="flex" role="group" aria-label="View mode" data-testid="view-mode-toggle">
       <button
         onClick={() => onChange('table')}
         disabled={disabled}
-        className={`${baseClasses} ${value === 'table' ? activeClasses : inactiveClasses}`}
+        className={`px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+          value === 'table' ? 'btn-toggle-active' : 'btn-toggle-inactive'
+        }`}
         aria-pressed={value === 'table'}
         title="Table View (T)"
         data-testid="view-toggle-table"
@@ -39,7 +32,9 @@ export function ViewModeToggle({ value, onChange, disabled }: ViewModeToggleProp
       <button
         onClick={() => onChange('diagram')}
         disabled={disabled}
-        className={`${baseClasses} ${value === 'diagram' ? activeClasses : inactiveClasses}`}
+        className={`px-4 py-2 text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed -ml-px ${
+          value === 'diagram' ? 'btn-toggle-active' : 'btn-toggle-inactive'
+        }`}
         aria-pressed={value === 'diagram'}
         title="Diagram View (D)"
         data-testid="view-toggle-diagram"

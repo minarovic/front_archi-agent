@@ -8,22 +8,18 @@ const EXAMPLE_PROMPTS = [
   {
     icon: "📊",
     text: "Show me all FACT tables in dm_bs_purchase schema",
-    description: "List fact tables with measures"
   },
   {
     icon: "🔗",
     text: "What are the relationships for factv_purchase_order?",
-    description: "Explore table relationships"
   },
   {
     icon: "📈",
     text: "Generate an ER diagram for the Purchase domain",
-    description: "Visualize data model"
   },
   {
     icon: "🔍",
     text: "Analyze data quality issues in gold layer",
-    description: "Find quality problems"
   }
 ];
 
@@ -38,7 +34,7 @@ interface InitialViewProps {
 }
 
 // ============================================
-// InitialView Component (FE-001)
+// InitialView Component - Supply Chain Design Style
 // ============================================
 
 export function InitialView({ onSubmit, onLoadDocument, isLoading }: InitialViewProps) {
@@ -61,49 +57,50 @@ export function InitialView({ onSubmit, onLoadDocument, isLoading }: InitialView
       data-testid="initial-view"
     >
       {/* Hero Section */}
-      <div className="text-center mb-8 max-w-2xl">
-        <h1 className="text-4xl md:text-5xl font-bold text-[#0E3A2F] mb-4">
+      <div className="text-center mb-8 max-w-2xl animate-fade-in">
+        <h1 className="text-4xl md:text-5xl font-bold text-skoda-dark mb-4">
           Metadata Copilot
         </h1>
         <p className="text-lg md:text-xl text-gray-600">
           Explore your data catalog with natural language
         </p>
         <p className="text-sm text-gray-500 mt-2">
-          Start with an example or enter your own query
+          Ask about tables, columns, relationships, or data quality
         </p>
       </div>
 
-      {/* Example Prompts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 max-w-2xl w-full">
+      {/* Example Prompts Grid - Supply Chain Style */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8 max-w-2xl w-full animate-slide-in-up">
         {EXAMPLE_PROMPTS.map((prompt, index) => (
           <button
             key={index}
             onClick={() => handleExampleClick(prompt.text)}
             disabled={isLoading}
-            className="px-5 py-3 bg-white border border-gray-300 text-left text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-3 bg-white border border-gray-300 text-left text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 hover:border-gray-400 transition-colors"
             data-testid={`example-prompt-${index}`}
           >
-            {prompt.icon} {prompt.text}
+            <span className="mr-2">{prompt.icon}</span>
+            {prompt.text}
           </button>
         ))}
       </div>
 
-      {/* Input Section */}
-      <div className="w-full max-w-2xl mb-8">
+      {/* Large Centered Input - Supply Chain Style */}
+      <div className="w-full max-w-2xl animate-slide-in-up" style={{ animationDelay: '100ms' }}>
         <form onSubmit={handleSubmit} className="flex gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about your metadata..."
+            placeholder="Ask about tables, schemas, or relationships..."
             disabled={isLoading}
-            className="flex-1 p-4 border border-gray-300 focus:outline-none focus:border-[#0E3A2F] disabled:bg-gray-100 text-base text-gray-900 placeholder:text-gray-400"
+            className="flex-1 p-4 border border-gray-300 focus:outline-none focus:border-skoda-dark disabled:bg-gray-100 text-base text-gray-900 placeholder:text-gray-400"
             data-testid="initial-input"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-[#0E3A2F] text-white px-8 py-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-[#0E3A2F]"
+            className="bg-skoda-dark text-white px-8 py-4 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 border border-skoda-dark hover:opacity-90 transition-opacity"
             data-testid="initial-submit"
           >
             {isLoading ? (
@@ -123,21 +120,26 @@ export function InitialView({ onSubmit, onLoadDocument, isLoading }: InitialView
         </form>
       </div>
 
-      {/* Load Document Button */}
-      <div className="flex flex-col items-center gap-2">
+      {/* Load Document Section */}
+      <div className="flex flex-col items-center gap-2 mt-8 animate-fade-in" style={{ animationDelay: '200ms' }}>
         <button
           onClick={onLoadDocument}
           disabled={isLoading}
-          className="flex items-center gap-3 px-6 py-3 bg-white border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           data-testid="load-document-button"
         >
-          <span className="text-lg">📄</span>
-          <span className="text-sm font-medium text-gray-700">Load Sample Document</span>
+          <span>📄</span>
+          <span>Load Sample Document</span>
         </button>
         <p className="text-xs text-gray-400">
           Pre-configured business request for demo
         </p>
       </div>
+
+      {/* Footer Branding */}
+      <p className="text-xs text-gray-400 mt-12">
+        Powered by MCOP Pipeline
+      </p>
     </div>
   );
 }
