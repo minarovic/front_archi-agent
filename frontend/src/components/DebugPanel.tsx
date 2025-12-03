@@ -3,7 +3,8 @@ import { useChatStore } from '../store/chatStore';
 export function DebugPanel() {
   const { canvasView } = useChatStore();
 
-  if (process.env.NODE_ENV === 'production') {
+  // Hide in production (use Vite env var)
+  if (import.meta.env.PROD) {
     return null;
   }
 

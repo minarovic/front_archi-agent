@@ -54,9 +54,9 @@ export class ChatPage {
 
   /**
    * Wait for agent response (with configurable timeout for LLM)
-   * @param timeout Max time to wait (default 60s for LLM)
+   * @param timeout Max time to wait (default 120s for Railway backend)
    */
-  async waitForResponse(timeout = 60000) {
+  async waitForResponse(timeout = 120000) {
     // Wait for thinking dots to disappear
     await expect(this.thinkingDots)
       .not.toBeVisible({ timeout });
